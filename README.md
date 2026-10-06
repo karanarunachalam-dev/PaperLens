@@ -1,0 +1,75 @@
+# Research Evidence Assistant
+
+A learning-first document question-answering project with inspectable source evidence.
+
+## Status
+
+Day 1 started on October 5, 2026. The first component is a standalone semantic-search exercise. PDF ingestion, a vector database, and answer generation are not implemented yet.
+
+## Day 1 objective
+
+Explain and demonstrate how a question becomes a vector and retrieves relevant text.
+
+## Learning sequence
+
+1. Explain LLM generation, context, and the purpose of retrieval.
+2. Calculate cosine similarity using small illustrative vectors.
+3. Generate real text embeddings and rank passages with NumPy.
+4. Inspect paraphrases, irrelevant questions, and retrieval failures.
+5. Explain the implementation independently and record limitations.
+
+Progress and understanding checkpoints are recorded in `docs/learning-log.md`.
+
+## First experiment
+
+Six to ten short passages, one embedding model, and exact cosine search. No vector database is needed for this first experiment.
+
+The script contains eight invented teaching passages, not facts extracted from research papers. It uses `BAAI/bge-small-en-v1.5` on CPU, computes cosine similarity explicitly, and prints the top three passages. BGE's recommended retrieval instruction is applied only to questions.
+
+## Installation
+
+Use Python 3.12 and a separate virtual environment. The current workstation's default Python is 3.14; its project environment was created with the available bundled Python 3.12 runtime. On another machine, install Python 3.12 first.
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+`requirements-lock.txt` additionally records all installed dependencies for this Linux/Python 3.12 environment; use it instead of `requirements.txt` to reproduce the recorded versions more closely. The model revision is pinned in the script.
+
+The environment and downloaded model are excluded from Git. The first run downloads the public model into `.cache/models`; no paid API is used.
+
+## Usage
+
+From the repository root:
+
+```bash
+.venv/bin/python scripts/semantic_search_demo.py
+.venv/bin/python scripts/semantic_search_demo.py --query "When did training stop?" --top-k 2
+```
+
+After the model has downloaded, use `HF_HUB_OFFLINE=1` before either command to run from the local cache without Hub requests.
+
+The defaults include a direct question, its paraphrase, and a salary question for which no passage contains an answer. The last query deliberately demonstrates that top-k search still returns something when the answer is absent.
+
+## Code to understand
+
+- `model.encode(PASSAGES)` produces one vector per passage, computed once.
+- `model.encode(QUERY_PREFIX + question)` produces the question vector in the same space.
+- `cosine_similarity` implements the learner's dot-product-over-norms formula.
+- `np.argsort(-scores)[:top_k]` selects the largest scores first; plain `argsort(scores)` would order smallest first.
+
+Model loading, cache paths, and command-line parsing are supporting library/setup code. The explicit encode → compare → rank steps are the learning objective.
+
+## Limitations
+
+Similarity scores are not probabilities. This example always returns top-k and does not decide answerability. The tiny synthetic collection does not establish real-world retrieval quality. Later modules will add extraction, provenance, chunking, evaluation, and grounded generation.
+
+## References
+
+- [BGE model card: retrieval instructions and model details](https://huggingface.co/BAAI/bge-small-en-v1.5)
+- [Sentence Transformers: semantic search](https://sbert.net/examples/sentence_transformer/applications/semantic-search/README.html)
+
+## Results
+
+The CPU demo ran successfully on October 6, 2026. Both batch-size questions retrieved the supporting passage first; the unsupported salary question still returned passages. See `reports/day1-semantic-search.md` for observed scores and limits. These examples are a functional check, not a retrieval-quality benchmark.
