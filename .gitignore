@@ -9,6 +9,7 @@ __pycache__/
 !.env.example
 data/raw/
 data/index/
+data/processed/
 models/
 *.egg-info/
 dist/

@@ -24,6 +24,7 @@ networkx==3.6.1
 numpy==2.5.3
 packaging==26.3
 Pygments==2.21.0
+pypdf==6.19.0
 PyYAML==6.0.3
 regex==2026.9.29
 rich==15.0.0

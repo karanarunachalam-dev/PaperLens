@@ -54,7 +54,7 @@ Use explicitly illustrative two-dimensional vectors before generating real text 
 
 ### Module 3: Real embeddings and exact semantic search
 
-Status: implemented and run on October 6. Learner walkthrough and hands-on query exercise pending.
+Status: implemented and run on October 6. Learner confirmed understanding and requested progression. No independent custom-query result was provided; do not represent one as verified.
 
 - Created an isolated Python 3.12.14 environment using the available bundled interpreter; system Python was not changed.
 - Installed CPU-only PyTorch, NumPy, and Sentence Transformers. Recorded versions in requirements files.
@@ -68,6 +68,21 @@ Status: implemented and run on October 6. Learner walkthrough and hands-on query
 
 The learner requested fewer interruptions. Use one short applied checkpoint after a major working module rather than questions after each small concept. Explain code while building and reserve extra checks for observed misunderstandings.
 
+## October 6, 2026 — Day 2, first component
+
+### Module 4: PDF text extraction with page provenance
+
+Status: implemented and tested; code walkthrough provided next.
+
+- Added `scripts/extract_pdf.py` using pypdf 6.19.0.
+- Outputs one JSONL record per physical page, retaining empty pages and warning about them.
+- Records content-based document ID, filename, one-based physical page number, and text.
+- Only strips outer whitespace; does not silently remove punctuation or repair layout.
+- Explicit failures for documents without extractable text, encrypted PDFs, and malformed PDFs.
+- Five meaningful extraction tests passed on synthetic PDF fixtures.
+- End-to-end synthetic sample has text on pages 1 and 3 and a deliberately blank page 2.
+- No actual research-paper collection has been tested yet.
+
 ### Next step
 
-Learner runs a custom query and inspects actual evidence in the ranked passages. Then recap Day 1 and decide whether to add the optional TF-IDF comparison before PDF ingestion.
+Inspect page records against a PDF; then implement and compare fixed-token versus paragraph-aware chunking. Reusable functions can move from the small teaching scripts into `src/` when components are integrated.

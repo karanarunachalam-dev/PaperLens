@@ -4,7 +4,7 @@ A learning-first document question-answering project with inspectable source evi
 
 ## Status
 
-Day 1 started on October 5, 2026. The first component is a standalone semantic-search exercise. PDF ingestion, a vector database, and answer generation are not implemented yet.
+Day 1 started on October 5, 2026. Implemented components: a standalone semantic-search exercise and a page-aware PDF text extractor. Chunking, a vector database, and answer generation are not implemented yet.
 
 ## Day 1 objective
 
@@ -63,12 +63,28 @@ Model loading, cache paths, and command-line parsing are supporting library/setu
 
 ## Limitations
 
-Similarity scores are not probabilities. This example always returns top-k and does not decide answerability. The tiny synthetic collection does not establish real-world retrieval quality. Later modules will add extraction, provenance, chunking, evaluation, and grounded generation.
+Similarity scores are not probabilities. This example always returns top-k and does not decide answerability. The tiny synthetic collection does not establish real-world retrieval quality. Later modules will connect PDF extraction to chunking, evaluation, and grounded generation.
+
+## PDF extraction: first Day 2 component
+
+```bash
+.venv/bin/python scripts/extract_pdf.py data/samples/extraction-demo.pdf --output data/processed/extraction-demo.jsonl
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+To inspect your own PDF, replace the sample path. Omit `--output` to print records to the terminal. Each JSONL line contains one page record: `document_id`, `source`, `page`, and `text`. The ID is a SHA-256 digest of the file bytes; identical files share an ID even under different filenames. This identifies byte-identical documents, not semantically equivalent PDFs.
+
+The sample is synthetic: page 1 states a batch size, page 2 is deliberately blank, and page 3 states an image resolution. Empty page records preserve original physical PDF page numbers and trigger a warning. Physical page numbers can differ from page labels printed inside a document.
+
+The extractor strips outer whitespace only. It preserves punctuation and does not guess how to repair tables, formulas, line wrapping, or hyphenated words. Empty extraction across the entire file is an explicit failure. Encrypted PDFs are currently unsupported; malformed files report parsing errors. No OCR is performed, and mixed image/text documents require manual review of empty pages. This local utility is not yet hardened as an upload service.
+
+Five extraction tests passed: text/page provenance across a blank page, content-based IDs, all-blank input, encrypted input, and malformed input. The end-to-end CLI also produced three records for the sample and warned about page 2. These checks use generated fixtures; extraction quality on a real research-paper collection remains untested.
 
 ## References
 
 - [BGE model card: retrieval instructions and model details](https://huggingface.co/BAAI/bge-small-en-v1.5)
 - [Sentence Transformers: semantic search](https://sbert.net/examples/sentence_transformer/applications/semantic-search/README.html)
+- [pypdf: extraction behavior and limitations](https://pypdf.readthedocs.io/en/stable/user/extract-text.html)
 
 ## Results
 
