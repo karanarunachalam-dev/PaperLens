@@ -1,0 +1,716 @@
+{
+  "description": "Synthetic development fixture, not research findings. Paragraph breaks are intentionally available. All ten questions are answerable. Gold evidence is independent of chunk boundaries.",
+  "dataset_sha256": "c8064f7186556e642f2995f7032eac4b17b62b5cdc4292c78e20b462959a56fc",
+  "model": "BAAI/bge-small-en-v1.5",
+  "revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+  "size": 64,
+  "overlap": 8,
+  "top_k": 3,
+  "metric": "A hit requires one retrieved chunk to contain the entire reference evidence span on the correct source page.",
+  "strategies": {
+    "fixed": {
+      "chunk_count": 10,
+      "max_input_tokens": 66,
+      "hit_at_1_count": 8,
+      "hit_at_k_count": 8,
+      "question_count": 10,
+      "mean_scoring_ms": 0.5344696999600274,
+      "chunks": [
+        {
+          "chunk_id": "8fd33ac775f70ed0e03325c76570e4373d91b25ca09d0a84a10527e2e5b87f9b",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 1,
+          "strategy": "fixed",
+          "start_char": 0,
+          "end_char": 353,
+          "text": "Project Alder investigates road damage detection on daytime photographs. Alder training used mini-batches of 16 images for each weight update. The experiment records the optimization settings so another student can reproduce this baseline.\n\nProject Alder starts from a detector pretrained on general object images. Alder used an initial learning rate of",
+          "token_count": 66
+        },
+        {
+          "chunk_id": "be10efc7f1c5d98dff08e4e979d53f332fe3f1b8be7fe36582a89bfc453b3b51",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 1,
+          "strategy": "fixed",
+          "start_char": 315,
+          "end_char": 662,
+          "text": "Alder used an initial learning rate of 0.001 with the AdamW optimizer. The research team kept this setting fixed during its first comparison.\n\nProject Alder monitors a separate validation collection during training. Alder stopped after validation loss failed to improve for five consecutive epochs. This stopping rule limited further training once",
+          "token_count": 66
+        },
+        {
+          "chunk_id": "a988e4826334a98f9624a2ab9d7788b36a1475bd8b9e5c7de705b5981051d367",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 1,
+          "strategy": "fixed",
+          "start_char": 612,
+          "end_char": 706,
+          "text": ". This stopping rule limited further training once the validation objective stopped improving.",
+          "token_count": 16
+        },
+        {
+          "chunk_id": "3ef40cc559494573c8b111fa1c928d2a21c278ab1925522525ddabb505b2bc59",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 2,
+          "strategy": "fixed",
+          "start_char": 0,
+          "end_char": 341,
+          "text": "Project Alder evaluates images that were excluded from training and model selection. Alder reserved 300 images for the final held-out test set. These examples were evaluated only after the team selected its training configuration.\n\nProject Alder measures deployment behavior with one image at a time. Alder resized inference images to 640 by",
+          "token_count": 66
+        },
+        {
+          "chunk_id": "ac01088a97a372b729c4694b6c849517da4005bc9157c6179d8dce48af894219",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 2,
+          "strategy": "fixed",
+          "start_char": 303,
+          "end_char": 476,
+          "text": "der resized inference images to 640 by 640 pixels. The team recorded this resolution alongside timing results because changing resolution changes the computational workload.",
+          "token_count": 30
+        },
+        {
+          "chunk_id": "8886037519350e83958b283726a717f67c3a991f3fc0c6f80717ba282559d7b8",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 1,
+          "strategy": "fixed",
+          "start_char": 0,
+          "end_char": 364,
+          "text": "Project Birch investigates litter detection on outdoor photographs. Birch training used mini-batches of 8 images for each weight update. The experiment records its own configuration independently from other projects so results remain interpretable.\n\nProject Birch initializes its detector from pretrained weights. Birch used an initial learning rate of 0.0005 with",
+          "token_count": 66
+        },
+        {
+          "chunk_id": "c57da6d0c1b1ff74496c686139316238ac508fbba5e93788f36a27376a3118b7",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 1,
+          "strategy": "fixed",
+          "start_char": 336,
+          "end_char": 687,
+          "text": "learning rate of 0.0005 with the SGD optimizer. The team documented these settings before inspecting results to keep the baseline experiment reproducible.\n\nProject Birch uses a separate validation collection to monitor learning. Birch stopped after validation loss failed to improve for eight consecutive epochs. The stopping rule was fixed before the",
+          "token_count": 66
+        },
+        {
+          "chunk_id": "dcc93cc34ea4539f9a2ba2c318cd57f9ada75ae83dfbd594e59e22f7a0e4b756",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 1,
+          "strategy": "fixed",
+          "start_char": 647,
+          "end_char": 737,
+          "text": ". The stopping rule was fixed before the training run began and was not changed during it.",
+          "token_count": 20
+        },
+        {
+          "chunk_id": "d54d6fd0695939cae1ac574c4ed833a04b1a8410d239bdb4c351fced04d030ce",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 2,
+          "strategy": "fixed",
+          "start_char": 0,
+          "end_char": 376,
+          "text": "Project Birch reports its final evaluation on images excluded from development. Birch reserved 200 images for the final held-out test set. The team used validation images for model selection and preserved this test collection for final reporting.\n\nProject Birch processes uploaded photographs one at a time during inference. Birch resized inference images to 512 by 512 pixels",
+          "token_count": 66
+        },
+        {
+          "chunk_id": "0868be95d45beda024991498f1f5865aa60027aef87cf7a0413140ceeedcba3e",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 2,
+          "strategy": "fixed",
+          "start_char": 334,
+          "end_char": 492,
+          "text": "ized inference images to 512 by 512 pixels. It recorded this resolution alongside hardware details to make subsequent latency comparisons easier to interpret.",
+          "token_count": 29
+        }
+      ],
+      "results": [
+        {
+          "question": "How many images did Alder process per training batch?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.6937459997971018,
+          "retrieved": [
+            {
+              "chunk_id": "8fd33ac775f70ed0e03325c76570e4373d91b25ca09d0a84a10527e2e5b87f9b",
+              "score": 0.8353269696235657,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "3ef40cc559494573c8b111fa1c928d2a21c278ab1925522525ddabb505b2bc59",
+              "score": 0.815724790096283,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "be10efc7f1c5d98dff08e4e979d53f332fe3f1b8be7fe36582a89bfc453b3b51",
+              "score": 0.7691136002540588,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "Which optimizer and initial learning rate did Alder use?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.47712200012028916,
+          "retrieved": [
+            {
+              "chunk_id": "be10efc7f1c5d98dff08e4e979d53f332fe3f1b8be7fe36582a89bfc453b3b51",
+              "score": 0.842487633228302,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "8fd33ac775f70ed0e03325c76570e4373d91b25ca09d0a84a10527e2e5b87f9b",
+              "score": 0.7262865304946899,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "3ef40cc559494573c8b111fa1c928d2a21c278ab1925522525ddabb505b2bc59",
+              "score": 0.6872811913490295,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How long did Alder wait without validation improvement before stopping?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.45893900005467003,
+          "retrieved": [
+            {
+              "chunk_id": "be10efc7f1c5d98dff08e4e979d53f332fe3f1b8be7fe36582a89bfc453b3b51",
+              "score": 0.8156777620315552,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "3ef40cc559494573c8b111fa1c928d2a21c278ab1925522525ddabb505b2bc59",
+              "score": 0.7049077153205872,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "a988e4826334a98f9624a2ab9d7788b36a1475bd8b9e5c7de705b5981051d367",
+              "score": 0.6922698616981506,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How many images were held out for Alder's final evaluation?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.7622170001013728,
+          "retrieved": [
+            {
+              "chunk_id": "3ef40cc559494573c8b111fa1c928d2a21c278ab1925522525ddabb505b2bc59",
+              "score": 0.8214860558509827,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "8fd33ac775f70ed0e03325c76570e4373d91b25ca09d0a84a10527e2e5b87f9b",
+              "score": 0.7269178628921509,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "d54d6fd0695939cae1ac574c4ed833a04b1a8410d239bdb4c351fced04d030ce",
+              "score": 0.7231734991073608,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "What input resolution did Alder use for inference?",
+          "hit_at_1": false,
+          "hit_at_k": false,
+          "scoring_ms": 0.46154699975886615,
+          "retrieved": [
+            {
+              "chunk_id": "3ef40cc559494573c8b111fa1c928d2a21c278ab1925522525ddabb505b2bc59",
+              "score": 0.7310592532157898,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "be10efc7f1c5d98dff08e4e979d53f332fe3f1b8be7fe36582a89bfc453b3b51",
+              "score": 0.730963408946991,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "8fd33ac775f70ed0e03325c76570e4373d91b25ca09d0a84a10527e2e5b87f9b",
+              "score": 0.690660834312439,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How many images did Birch process per training batch?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.4636249996110564,
+          "retrieved": [
+            {
+              "chunk_id": "8886037519350e83958b283726a717f67c3a991f3fc0c6f80717ba282559d7b8",
+              "score": 0.8418843746185303,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "d54d6fd0695939cae1ac574c4ed833a04b1a8410d239bdb4c351fced04d030ce",
+              "score": 0.7767566442489624,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "c57da6d0c1b1ff74496c686139316238ac508fbba5e93788f36a27376a3118b7",
+              "score": 0.7272451519966125,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "Which optimizer and initial learning rate did Birch use?",
+          "hit_at_1": false,
+          "hit_at_k": false,
+          "scoring_ms": 0.47772600009921007,
+          "retrieved": [
+            {
+              "chunk_id": "c57da6d0c1b1ff74496c686139316238ac508fbba5e93788f36a27376a3118b7",
+              "score": 0.7643586993217468,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "be10efc7f1c5d98dff08e4e979d53f332fe3f1b8be7fe36582a89bfc453b3b51",
+              "score": 0.7435999512672424,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "8886037519350e83958b283726a717f67c3a991f3fc0c6f80717ba282559d7b8",
+              "score": 0.719987154006958,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How long did Birch wait without validation improvement before stopping?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.47961400014173705,
+          "retrieved": [
+            {
+              "chunk_id": "c57da6d0c1b1ff74496c686139316238ac508fbba5e93788f36a27376a3118b7",
+              "score": 0.7752174735069275,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "d54d6fd0695939cae1ac574c4ed833a04b1a8410d239bdb4c351fced04d030ce",
+              "score": 0.7151405811309814,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "a988e4826334a98f9624a2ab9d7788b36a1475bd8b9e5c7de705b5981051d367",
+              "score": 0.69211345911026,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How many images were held out for Birch's final evaluation?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.592169999890757,
+          "retrieved": [
+            {
+              "chunk_id": "d54d6fd0695939cae1ac574c4ed833a04b1a8410d239bdb4c351fced04d030ce",
+              "score": 0.8632077574729919,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "8886037519350e83958b283726a717f67c3a991f3fc0c6f80717ba282559d7b8",
+              "score": 0.7065200209617615,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "3ef40cc559494573c8b111fa1c928d2a21c278ab1925522525ddabb505b2bc59",
+              "score": 0.6729340553283691,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "What input resolution did Birch use for inference?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.477991000025213,
+          "retrieved": [
+            {
+              "chunk_id": "d54d6fd0695939cae1ac574c4ed833a04b1a8410d239bdb4c351fced04d030ce",
+              "score": 0.7026396989822388,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "c57da6d0c1b1ff74496c686139316238ac508fbba5e93788f36a27376a3118b7",
+              "score": 0.6826425194740295,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "8886037519350e83958b283726a717f67c3a991f3fc0c6f80717ba282559d7b8",
+              "score": 0.6777274012565613,
+              "contains_evidence": false
+            }
+          ]
+        }
+      ]
+    },
+    "paragraph": {
+      "chunk_count": 10,
+      "max_input_tokens": 58,
+      "hit_at_1_count": 10,
+      "hit_at_k_count": 10,
+      "question_count": 10,
+      "mean_scoring_ms": 0.4280016999473446,
+      "chunks": [
+        {
+          "chunk_id": "3c9bd206f84de14d0103d97dc44815fc1c0be4019daf391005f86b1e9bd69483",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 1,
+          "strategy": "paragraph",
+          "start_char": 0,
+          "end_char": 239,
+          "text": "Project Alder investigates road damage detection on daytime photographs. Alder training used mini-batches of 16 images for each weight update. The experiment records the optimization settings so another student can reproduce this baseline.",
+          "token_count": 43
+        },
+        {
+          "chunk_id": "4880269054d916d667af219494ad9da2512caa78e7f3b4e6e8f9b902a1fcba81",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 1,
+          "strategy": "paragraph",
+          "start_char": 192,
+          "end_char": 456,
+          "text": "so another student can reproduce this baseline.\n\nProject Alder starts from a detector pretrained on general object images. Alder used an initial learning rate of 0.001 with the AdamW optimizer. The research team kept this setting fixed during its first comparison.",
+          "token_count": 56
+        },
+        {
+          "chunk_id": "3c7ff104405dae1b7d7a02752fee14e87a79799ab42fce50659c7008cf93936c",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 1,
+          "strategy": "paragraph",
+          "start_char": 409,
+          "end_char": 706,
+          "text": "this setting fixed during its first comparison.\n\nProject Alder monitors a separate validation collection during training. Alder stopped after validation loss failed to improve for five consecutive epochs. This stopping rule limited further training once the validation objective stopped improving.",
+          "token_count": 49
+        },
+        {
+          "chunk_id": "820a757a6ee23d14c82254eafeca554bf66ebc744ac5461e4be744f006299db0",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 2,
+          "strategy": "paragraph",
+          "start_char": 0,
+          "end_char": 230,
+          "text": "Project Alder evaluates images that were excluded from training and model selection. Alder reserved 300 images for the final held-out test set. These examples were evaluated only after the team selected its training configuration.",
+          "token_count": 44
+        },
+        {
+          "chunk_id": "8bf0f39de05f8013175af89c2ea12cce7675205945abe9d6eb798cd809291175",
+          "document_id": "alder-demo",
+          "source": "alder-demo.pdf",
+          "page": 2,
+          "strategy": "paragraph",
+          "start_char": 179,
+          "end_char": 476,
+          "text": "after the team selected its training configuration.\n\nProject Alder measures deployment behavior with one image at a time. Alder resized inference images to 640 by 640 pixels. The team recorded this resolution alongside timing results because changing resolution changes the computational workload.",
+          "token_count": 52
+        },
+        {
+          "chunk_id": "c431cbc567419daa1c736e9a956d607ed88d1864840a872d8e8f44b6925679c1",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 1,
+          "strategy": "paragraph",
+          "start_char": 0,
+          "end_char": 248,
+          "text": "Project Birch investigates litter detection on outdoor photographs. Birch training used mini-batches of 8 images for each weight update. The experiment records its own configuration independently from other projects so results remain interpretable.",
+          "token_count": 42
+        },
+        {
+          "chunk_id": "3129466cd72111f8b527c0f95ab86203e97055b3002d3e7b3b870ad039206678",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 1,
+          "strategy": "paragraph",
+          "start_char": 201,
+          "end_char": 490,
+          "text": "other projects so results remain interpretable.\n\nProject Birch initializes its detector from pretrained weights. Birch used an initial learning rate of 0.0005 with the SGD optimizer. The team documented these settings before inspecting results to keep the baseline experiment reproducible.",
+          "token_count": 58
+        },
+        {
+          "chunk_id": "e7e41922d0578010563c4d4e843c0731e11d863990069e18548e6cce0cdd2e3f",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 1,
+          "strategy": "paragraph",
+          "start_char": 448,
+          "end_char": 737,
+          "text": "keep the baseline experiment reproducible.\n\nProject Birch uses a separate validation collection to monitor learning. Birch stopped after validation loss failed to improve for eight consecutive epochs. The stopping rule was fixed before the training run began and was not changed during it.",
+          "token_count": 52
+        },
+        {
+          "chunk_id": "273aa7d96a4bb8b12cc1f35e0ece3460facb9d770e0bff9255d4de9bb15cf030",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 2,
+          "strategy": "paragraph",
+          "start_char": 0,
+          "end_char": 246,
+          "text": "Project Birch reports its final evaluation on images excluded from development. Birch reserved 200 images for the final held-out test set. The team used validation images for model selection and preserved this test collection for final reporting.",
+          "token_count": 44
+        },
+        {
+          "chunk_id": "0f6a1623c80f4930b6d3593671cb9ad098b4c3e67355ae85d5b8fcf2f03214c7",
+          "document_id": "birch-demo",
+          "source": "birch-demo.pdf",
+          "page": 2,
+          "strategy": "paragraph",
+          "start_char": 195,
+          "end_char": 492,
+          "text": "preserved this test collection for final reporting.\n\nProject Birch processes uploaded photographs one at a time during inference. Birch resized inference images to 512 by 512 pixels. It recorded this resolution alongside hardware details to make subsequent latency comparisons easier to interpret.",
+          "token_count": 50
+        }
+      ],
+      "results": [
+        {
+          "question": "How many images did Alder process per training batch?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.5662260000462993,
+          "retrieved": [
+            {
+              "chunk_id": "3c9bd206f84de14d0103d97dc44815fc1c0be4019daf391005f86b1e9bd69483",
+              "score": 0.8319881558418274,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "8bf0f39de05f8013175af89c2ea12cce7675205945abe9d6eb798cd809291175",
+              "score": 0.8080900311470032,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "820a757a6ee23d14c82254eafeca554bf66ebc744ac5461e4be744f006299db0",
+              "score": 0.7927709817886353,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "Which optimizer and initial learning rate did Alder use?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.3731970000444562,
+          "retrieved": [
+            {
+              "chunk_id": "4880269054d916d667af219494ad9da2512caa78e7f3b4e6e8f9b902a1fcba81",
+              "score": 0.8257192373275757,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "8bf0f39de05f8013175af89c2ea12cce7675205945abe9d6eb798cd809291175",
+              "score": 0.7153505682945251,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "3c9bd206f84de14d0103d97dc44815fc1c0be4019daf391005f86b1e9bd69483",
+              "score": 0.7041165828704834,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How long did Alder wait without validation improvement before stopping?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.4350099998191581,
+          "retrieved": [
+            {
+              "chunk_id": "3c7ff104405dae1b7d7a02752fee14e87a79799ab42fce50659c7008cf93936c",
+              "score": 0.8473705649375916,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "e7e41922d0578010563c4d4e843c0731e11d863990069e18548e6cce0cdd2e3f",
+              "score": 0.7111250758171082,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "820a757a6ee23d14c82254eafeca554bf66ebc744ac5461e4be744f006299db0",
+              "score": 0.7043838500976562,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How many images were held out for Alder's final evaluation?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.3526929999679851,
+          "retrieved": [
+            {
+              "chunk_id": "820a757a6ee23d14c82254eafeca554bf66ebc744ac5461e4be744f006299db0",
+              "score": 0.8362535238265991,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "3c9bd206f84de14d0103d97dc44815fc1c0be4019daf391005f86b1e9bd69483",
+              "score": 0.7456069588661194,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "8bf0f39de05f8013175af89c2ea12cce7675205945abe9d6eb798cd809291175",
+              "score": 0.7431785464286804,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "What input resolution did Alder use for inference?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.4179070001555374,
+          "retrieved": [
+            {
+              "chunk_id": "8bf0f39de05f8013175af89c2ea12cce7675205945abe9d6eb798cd809291175",
+              "score": 0.7914448380470276,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "4880269054d916d667af219494ad9da2512caa78e7f3b4e6e8f9b902a1fcba81",
+              "score": 0.7084575891494751,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "3c7ff104405dae1b7d7a02752fee14e87a79799ab42fce50659c7008cf93936c",
+              "score": 0.7080637812614441,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How many images did Birch process per training batch?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.3860940000777191,
+          "retrieved": [
+            {
+              "chunk_id": "c431cbc567419daa1c736e9a956d607ed88d1864840a872d8e8f44b6925679c1",
+              "score": 0.8445469737052917,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "0f6a1623c80f4930b6d3593671cb9ad098b4c3e67355ae85d5b8fcf2f03214c7",
+              "score": 0.7867955565452576,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "273aa7d96a4bb8b12cc1f35e0ece3460facb9d770e0bff9255d4de9bb15cf030",
+              "score": 0.7546603679656982,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "Which optimizer and initial learning rate did Birch use?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.46542799964299775,
+          "retrieved": [
+            {
+              "chunk_id": "3129466cd72111f8b527c0f95ab86203e97055b3002d3e7b3b870ad039206678",
+              "score": 0.8314806222915649,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "4880269054d916d667af219494ad9da2512caa78e7f3b4e6e8f9b902a1fcba81",
+              "score": 0.7171648144721985,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "e7e41922d0578010563c4d4e843c0731e11d863990069e18548e6cce0cdd2e3f",
+              "score": 0.6709587574005127,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How long did Birch wait without validation improvement before stopping?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.3987159998359857,
+          "retrieved": [
+            {
+              "chunk_id": "e7e41922d0578010563c4d4e843c0731e11d863990069e18548e6cce0cdd2e3f",
+              "score": 0.8191789388656616,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "273aa7d96a4bb8b12cc1f35e0ece3460facb9d770e0bff9255d4de9bb15cf030",
+              "score": 0.7081431150436401,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "3c7ff104405dae1b7d7a02752fee14e87a79799ab42fce50659c7008cf93936c",
+              "score": 0.7010486125946045,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "How many images were held out for Birch's final evaluation?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.4510489998210687,
+          "retrieved": [
+            {
+              "chunk_id": "273aa7d96a4bb8b12cc1f35e0ece3460facb9d770e0bff9255d4de9bb15cf030",
+              "score": 0.8632407188415527,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "0f6a1623c80f4930b6d3593671cb9ad098b4c3e67355ae85d5b8fcf2f03214c7",
+              "score": 0.7671374678611755,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "c431cbc567419daa1c736e9a956d607ed88d1864840a872d8e8f44b6925679c1",
+              "score": 0.7311873435974121,
+              "contains_evidence": false
+            }
+          ]
+        },
+        {
+          "question": "What input resolution did Birch use for inference?",
+          "hit_at_1": true,
+          "hit_at_k": true,
+          "scoring_ms": 0.43369700006223866,
+          "retrieved": [
+            {
+              "chunk_id": "0f6a1623c80f4930b6d3593671cb9ad098b4c3e67355ae85d5b8fcf2f03214c7",
+              "score": 0.7948436737060547,
+              "contains_evidence": true
+            },
+            {
+              "chunk_id": "e7e41922d0578010563c4d4e843c0731e11d863990069e18548e6cce0cdd2e3f",
+              "score": 0.6948744654655457,
+              "contains_evidence": false
+            },
+            {
+              "chunk_id": "3129466cd72111f8b527c0f95ab86203e97055b3002d3e7b3b870ad039206678",
+              "score": 0.6924577951431274,
+              "contains_evidence": false
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

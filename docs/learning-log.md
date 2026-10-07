@@ -83,6 +83,22 @@ Status: implemented and tested; code walkthrough provided next.
 - End-to-end synthetic sample has text on pages 1 and 3 and a deliberately blank page 2.
 - No actual research-paper collection has been tested yet.
 
+## October 7, 2026 — Day 2, chunking
+
+### Module 5: Chunking and controlled retrieval comparison
+
+Status: implemented and tested; learner walkthrough follows.
+
+- Added fixed-token and paragraph-aware strategies with shared size/overlap settings.
+- Preserve original text, document ID, physical page, and exact character offsets.
+- BGE tokenizer confirmed a 512-token limit and two special tokens per passage; actual chunks are re-tokenized to check their budgets.
+- Nine extraction/chunking tests passed. Sample PDF-to-chunks CLI preserved pages 1 and 3 and warned about the blank page 2.
+- Compared four synthetic extracted pages and ten questions with 64 content tokens, 8 overlap, and top-k 3. Normal PDF defaults remain 320/40.
+- Final complete-reference hit@3: fixed 8/10; paragraph 10/10. Both made ten chunks. This is an illustrative development result, not general retrieval accuracy.
+- Initial fixed result was 7/10 because references included terminal periods; inspection identified one punctuation-only miss. Excluding trailing periods from all reference spans corrected the metric without tuning chunk settings.
+- Remaining fixed misses split reference wording across chunks; a strict single-chunk span metric is not equivalent to answer correctness.
+- All details are recorded in `reports/day2-chunking.md` and the comparison JSON.
+
 ### Next step
 
-Inspect page records against a PDF; then implement and compare fixed-token versus paragraph-aware chunking. Reusable functions can move from the small teaching scripts into `src/` when components are integrated.
+Inspect real PDF extraction and boundaries, then persist chunk vectors and metadata in Qdrant. Reusable functions can move from the small teaching scripts into `src/` when components are integrated.

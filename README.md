@@ -4,7 +4,7 @@ A learning-first document question-answering project with inspectable source evi
 
 ## Status
 
-Day 1 started on October 5, 2026. Implemented components: a standalone semantic-search exercise and a page-aware PDF text extractor. Chunking, a vector database, and answer generation are not implemented yet.
+Day 1 started on October 5, 2026. Implemented components: standalone semantic search, page-aware PDF extraction, and two token-bounded chunking strategies with a controlled comparison. A vector database and answer generation are not implemented yet.
 
 ## Day 1 objective
 
@@ -79,6 +79,20 @@ The sample is synthetic: page 1 states a batch size, page 2 is deliberately blan
 The extractor strips outer whitespace only. It preserves punctuation and does not guess how to repair tables, formulas, line wrapping, or hyphenated words. Empty extraction across the entire file is an explicit failure. Encrypted PDFs are currently unsupported; malformed files report parsing errors. No OCR is performed, and mixed image/text documents require manual review of empty pages. This local utility is not yet hardened as an upload service.
 
 Five extraction tests passed: text/page provenance across a blank page, content-based IDs, all-blank input, encrypted input, and malformed input. The end-to-end CLI also produced three records for the sample and warned about page 2. These checks use generated fixtures; extraction quality on a real research-paper collection remains untested.
+
+## Chunking and comparison
+
+Run from the repository root using module syntax so the teaching scripts can share functions:
+
+```bash
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.chunk_pdf data/samples/extraction-demo.pdf --strategy paragraph --size 320 --overlap 40 --output data/processed/extraction-demo-chunks.jsonl
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.compare_chunking
+HF_HUB_OFFLINE=1 .venv/bin/python -m unittest discover -s tests -v
+```
+
+The tokenizer and embedding model must already be cached by the Day 1 demo. Both strategies keep page metadata and exact character offsets. `fixed` uses token windows; `paragraph` prefers a blank-line boundary within each window and falls back to a token boundary for long paragraphs. They do not cross PDF pages. Overlap counts content tokens; reported `token_count` includes the model's special tokens. Normal defaults are 320 content tokens and 40 overlap, with every actual chunk rechecked against its budget.
+
+The comparison defaults to 64 content tokens and 8 overlap to expose boundaries in the short synthetic corpus. Both strategies use the same ten questions, model, and top-k. Final complete-reference hit@3 was 8/10 for fixed and 10/10 for paragraph-aware. This is not answer accuracy or a general benchmark. See `reports/day2-chunking.md` for the metric correction, limitations, and error analysis; `reports/chunking-comparison.json` contains all chunk text and ranked results.
 
 ## References
 

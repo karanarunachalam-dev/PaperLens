@@ -1,0 +1,91 @@
+{
+  "description": "Synthetic development fixture, not research findings. Paragraph breaks are intentionally available. All ten questions are answerable. Gold evidence is independent of chunk boundaries.",
+  "pages": [
+    {
+      "document_id": "alder-demo",
+      "source": "alder-demo.pdf",
+      "page": 1,
+      "text": "Project Alder investigates road damage detection on daytime photographs. Alder training used mini-batches of 16 images for each weight update. The experiment records the optimization settings so another student can reproduce this baseline.\n\nProject Alder starts from a detector pretrained on general object images. Alder used an initial learning rate of 0.001 with the AdamW optimizer. The research team kept this setting fixed during its first comparison.\n\nProject Alder monitors a separate validation collection during training. Alder stopped after validation loss failed to improve for five consecutive epochs. This stopping rule limited further training once the validation objective stopped improving."
+    },
+    {
+      "document_id": "alder-demo",
+      "source": "alder-demo.pdf",
+      "page": 2,
+      "text": "Project Alder evaluates images that were excluded from training and model selection. Alder reserved 300 images for the final held-out test set. These examples were evaluated only after the team selected its training configuration.\n\nProject Alder measures deployment behavior with one image at a time. Alder resized inference images to 640 by 640 pixels. The team recorded this resolution alongside timing results because changing resolution changes the computational workload."
+    },
+    {
+      "document_id": "birch-demo",
+      "source": "birch-demo.pdf",
+      "page": 1,
+      "text": "Project Birch investigates litter detection on outdoor photographs. Birch training used mini-batches of 8 images for each weight update. The experiment records its own configuration independently from other projects so results remain interpretable.\n\nProject Birch initializes its detector from pretrained weights. Birch used an initial learning rate of 0.0005 with the SGD optimizer. The team documented these settings before inspecting results to keep the baseline experiment reproducible.\n\nProject Birch uses a separate validation collection to monitor learning. Birch stopped after validation loss failed to improve for eight consecutive epochs. The stopping rule was fixed before the training run began and was not changed during it."
+    },
+    {
+      "document_id": "birch-demo",
+      "source": "birch-demo.pdf",
+      "page": 2,
+      "text": "Project Birch reports its final evaluation on images excluded from development. Birch reserved 200 images for the final held-out test set. The team used validation images for model selection and preserved this test collection for final reporting.\n\nProject Birch processes uploaded photographs one at a time during inference. Birch resized inference images to 512 by 512 pixels. It recorded this resolution alongside hardware details to make subsequent latency comparisons easier to interpret."
+    }
+  ],
+  "questions": [
+    {
+      "question": "How many images did Alder process per training batch?",
+      "document_id": "alder-demo",
+      "page": 1,
+      "evidence": "Alder training used mini-batches of 16 images for each weight update"
+    },
+    {
+      "question": "Which optimizer and initial learning rate did Alder use?",
+      "document_id": "alder-demo",
+      "page": 1,
+      "evidence": "Alder used an initial learning rate of 0.001 with the AdamW optimizer"
+    },
+    {
+      "question": "How long did Alder wait without validation improvement before stopping?",
+      "document_id": "alder-demo",
+      "page": 1,
+      "evidence": "Alder stopped after validation loss failed to improve for five consecutive epochs"
+    },
+    {
+      "question": "How many images were held out for Alder's final evaluation?",
+      "document_id": "alder-demo",
+      "page": 2,
+      "evidence": "Alder reserved 300 images for the final held-out test set"
+    },
+    {
+      "question": "What input resolution did Alder use for inference?",
+      "document_id": "alder-demo",
+      "page": 2,
+      "evidence": "Alder resized inference images to 640 by 640 pixels"
+    },
+    {
+      "question": "How many images did Birch process per training batch?",
+      "document_id": "birch-demo",
+      "page": 1,
+      "evidence": "Birch training used mini-batches of 8 images for each weight update"
+    },
+    {
+      "question": "Which optimizer and initial learning rate did Birch use?",
+      "document_id": "birch-demo",
+      "page": 1,
+      "evidence": "Birch used an initial learning rate of 0.0005 with the SGD optimizer"
+    },
+    {
+      "question": "How long did Birch wait without validation improvement before stopping?",
+      "document_id": "birch-demo",
+      "page": 1,
+      "evidence": "Birch stopped after validation loss failed to improve for eight consecutive epochs"
+    },
+    {
+      "question": "How many images were held out for Birch's final evaluation?",
+      "document_id": "birch-demo",
+      "page": 2,
+      "evidence": "Birch reserved 200 images for the final held-out test set"
+    },
+    {
+      "question": "What input resolution did Birch use for inference?",
+      "document_id": "birch-demo",
+      "page": 2,
+      "evidence": "Birch resized inference images to 512 by 512 pixels"
+    }
+  ]
+}
