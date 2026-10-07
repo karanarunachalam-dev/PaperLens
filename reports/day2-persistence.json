@@ -1,0 +1,105 @@
+{
+  "ingest": [
+    {
+      "document_id": "21bee80215b91c9828de33f01d7ad64a9da932ed14a14689e28b8288aaad2519",
+      "source": "extraction-demo.pdf",
+      "chunks": 2,
+      "empty_pages": [
+        2
+      ]
+    },
+    {
+      "document_id": "9cb0ef05519a0916ec907566f889144415b41ba185eb8d0495c769d5221df7b5",
+      "source": "second-extraction-demo.pdf",
+      "chunks": 2,
+      "empty_pages": []
+    }
+  ],
+  "list_before": [
+    {
+      "document_id": "21bee80215b91c9828de33f01d7ad64a9da932ed14a14689e28b8288aaad2519",
+      "source": "extraction-demo.pdf",
+      "chunks": 2
+    },
+    {
+      "document_id": "9cb0ef05519a0916ec907566f889144415b41ba185eb8d0495c769d5221df7b5",
+      "source": "second-extraction-demo.pdf",
+      "chunks": 2
+    }
+  ],
+  "search_all": [
+    {
+      "score": 0.8072799521175322,
+      "chunk_id": "8c584f559771d26b34f9aa40cd7bcf63b413d1893759b4dfed7060ff1865eb86",
+      "document_id": "21bee80215b91c9828de33f01d7ad64a9da932ed14a14689e28b8288aaad2519",
+      "source": "extraction-demo.pdf",
+      "page": 1,
+      "strategy": "paragraph",
+      "start_char": 0,
+      "end_char": 35,
+      "text": "Demo only. Training batch size: 16.",
+      "token_count": 11
+    },
+    {
+      "score": 0.7968266650166553,
+      "chunk_id": "e29db73032dda235ddeca93ab7d4351e07e453d9dba1f75bc7378297bbd8fb4b",
+      "document_id": "9cb0ef05519a0916ec907566f889144415b41ba185eb8d0495c769d5221df7b5",
+      "source": "second-extraction-demo.pdf",
+      "page": 1,
+      "strategy": "paragraph",
+      "start_char": 0,
+      "end_char": 42,
+      "text": "Second demo only. Training batch size: 32.",
+      "token_count": 12
+    },
+    {
+      "score": 0.5844256747985058,
+      "chunk_id": "06070ca3508e0ec8493ca6fa63589e92fc21f513b430a34adef3720efc80479a",
+      "document_id": "21bee80215b91c9828de33f01d7ad64a9da932ed14a14689e28b8288aaad2519",
+      "source": "extraction-demo.pdf",
+      "page": 3,
+      "strategy": "paragraph",
+      "start_char": 0,
+      "end_char": 45,
+      "text": "Demo only. Input image resolution: 640 x 640.",
+      "token_count": 13
+    }
+  ],
+  "search_filtered": [
+    {
+      "score": 0.8072799521175322,
+      "chunk_id": "8c584f559771d26b34f9aa40cd7bcf63b413d1893759b4dfed7060ff1865eb86",
+      "document_id": "21bee80215b91c9828de33f01d7ad64a9da932ed14a14689e28b8288aaad2519",
+      "source": "extraction-demo.pdf",
+      "page": 1,
+      "strategy": "paragraph",
+      "start_char": 0,
+      "end_char": 35,
+      "text": "Demo only. Training batch size: 16.",
+      "token_count": 11
+    }
+  ],
+  "unknown_document": [],
+  "reimport": [
+    {
+      "document_id": "21bee80215b91c9828de33f01d7ad64a9da932ed14a14689e28b8288aaad2519",
+      "source": "extraction-demo.pdf",
+      "chunks": 2,
+      "empty_pages": [
+        2
+      ]
+    }
+  ],
+  "list_after": [
+    {
+      "document_id": "21bee80215b91c9828de33f01d7ad64a9da932ed14a14689e28b8288aaad2519",
+      "source": "extraction-demo.pdf",
+      "chunks": 2
+    },
+    {
+      "document_id": "9cb0ef05519a0916ec907566f889144415b41ba185eb8d0495c769d5221df7b5",
+      "source": "second-extraction-demo.pdf",
+      "chunks": 2
+    }
+  ]
+}

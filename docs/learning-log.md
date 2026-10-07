@@ -99,6 +99,24 @@ Status: implemented and tested; learner walkthrough follows.
 - Remaining fixed misses split reference wording across chunks; a strict single-chunk span metric is not equivalent to answer correctness.
 - All details are recorded in `reports/day2-chunking.md` and the comparison JSON.
 
+### Module 6: Persistent Qdrant retrieval
+
+Status: implemented and tested; walkthrough follows.
+
+- Added `scripts/local_index.py` and `scripts/search_documents.py`.
+- Installed qdrant-client 1.19.1 and recorded dependency versions.
+- Store text, original page/offsets, IDs, and vectors together; filter by document ID before top-k selection.
+- Use deterministic UUID point IDs and upserts to avoid duplicate imports; stale chunks are cleaned up only for the affected document.
+- Thirteen tests passed, including four storage tests using controlled vectors.
+- Actual BGE integration indexed two synthetic PDFs into four chunks. Separate CLI processes confirmed persistence, filtered search, empty results for an unknown document, and duplicate-free reimport.
+- Search returned the first PDF's batch-size evidence on page 1 with cosine score 0.8072799521175322.
+- Full observations and limitations are in `reports/day2-persistence.md` and `.json`.
+- Existing learner whitespace edits in `scripts/chunk_pdf.py` were preserved and are not part of this implementation commit.
+
+### Generation preference
+
+The learner explicitly selected a small local generative model with no API charges, accepting slower responses. This replaces the roadmap's provisional hosted-API choice. Do not set up paid API generation by default.
+
 ### Next step
 
-Inspect real PDF extraction and boundaries, then persist chunk vectors and metadata in Qdrant. Reusable functions can move from the small teaching scripts into `src/` when components are integrated.
+Select and benchmark a local generator, then add grounded answer generation and citation mapping. Real research-paper extraction/retrieval evaluation remains outstanding. Reusable functions can move from the small teaching scripts into `src/` when application components are integrated.

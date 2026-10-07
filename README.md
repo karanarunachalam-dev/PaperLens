@@ -4,7 +4,7 @@ A learning-first document question-answering project with inspectable source evi
 
 ## Status
 
-Day 1 started on October 5, 2026. Implemented components: standalone semantic search, page-aware PDF extraction, and two token-bounded chunking strategies with a controlled comparison. A vector database and answer generation are not implemented yet.
+Day 1 started on October 5, 2026. Implemented components: standalone semantic search, page-aware PDF extraction, two token-bounded chunking strategies, and persistent Qdrant document retrieval. Answer generation is not implemented yet.
 
 ## Day 1 objective
 
@@ -94,11 +94,31 @@ The tokenizer and embedding model must already be cached by the Day 1 demo. Both
 
 The comparison defaults to 64 content tokens and 8 overlap to expose boundaries in the short synthetic corpus. Both strategies use the same ten questions, model, and top-k. Final complete-reference hit@3 was 8/10 for fixed and 10/10 for paragraph-aware. This is not answer accuracy or a general benchmark. See `reports/day2-chunking.md` for the metric correction, limitations, and error analysis; `reports/chunking-comparison.json` contains all chunk text and ranked results.
 
+## Persistent PDF search
+
+Qdrant local mode stores vectors and chunk payloads in `data/index/qdrant/` (ignored by Git). A payload carries the original text, filename, physical page, document ID, chunk ID, and character offsets. Run one process against this embedded store at a time. Model inference stays on the CPU with cached weights.
+
+```bash
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.search_documents ingest data/samples/extraction-demo.pdf data/samples/second-extraction-demo.pdf
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.search_documents list
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.search_documents search "What batch size was used for training?" --top-k 3
+```
+
+To restrict a search, copy a `document_id` from `list` and add `--document-id YOUR_DOCUMENT_ID` to the search command. The filter restricts eligible results before selecting top-k. A nonexistent document ID produces an empty list.
+
+The default collection uses paragraph-aware chunks with a 320-token content cap and 40-token overlap, chosen provisionally following the synthetic comparison. A fingerprint of model revision and chunk settings determines the collection name, so changed configurations get separate collections. Re-importing identical bytes uses stable point IDs and avoids duplicate chunks. Stale chunks for that same document ID are removed after successful upserts; other documents are preserved. Modified PDF bytes create a new document ID and therefore a separate document. Removal/version replacement across different document IDs is not implemented yet.
+
+The local client's dense-vector path performs exact scoring. This stage demonstrates persistence and filtering, not ANN speed. Search still returns similar passages for unsupported questions; answerability is not inferred from scores. Failed multi-document imports may leave earlier documents successfully indexed, and replacing a document across multiple batches is not transactional; repeating the import repairs an interrupted update.
+
+Storage-level tests use controlled vectors to check persistence, cosine scores, filters, duplicate imports, stale-chunk cleanup, and invalid-vector rejection. The actual embedding integration uses two synthetic PDFs. Details and observed results are recorded in `reports/day2-persistence.json` and `reports/day2-persistence.md`; real research-paper evaluation is still outstanding.
+
 ## References
 
 - [BGE model card: retrieval instructions and model details](https://huggingface.co/BAAI/bge-small-en-v1.5)
 - [Sentence Transformers: semantic search](https://sbert.net/examples/sentence_transformer/applications/semantic-search/README.html)
 - [pypdf: extraction behavior and limitations](https://pypdf.readthedocs.io/en/stable/user/extract-text.html)
+- [Qdrant Python client: local persistent mode](https://github.com/qdrant/qdrant-client)
+- [Qdrant metadata filtering](https://qdrant.tech/documentation/search/filtering/)
 
 ## Results
 
