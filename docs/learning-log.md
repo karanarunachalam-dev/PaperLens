@@ -147,3 +147,12 @@ The initial generation walkthrough is in `docs/local-generation.md`. The subsequ
 - Added quote matching for PDF ligatures, curly quotes, and line-break hyphens while returning original text. Added a limited numeral-evidence guard and retained rejected responses for debugging.
 - Revised prompt order to put the question after context, explicitly request all parts, and prefer short evidence quotes. Focused reruns and remaining failures are recorded in `reports/research-evaluation.md`; do not claim the development set is held out or that these changes guarantee faithfulness.
 - The next application module will provide upload/question APIs, explicit generation-error responses, and inspectable evidence for the frontend. Tables and comparisons across papers remain priority retrieval limitations.
+
+### Hands-on check: passages versus documents
+
+- The learner ran the demo question, “What training batch size does each document report?” The model correctly answered 16 and 32, then incorrectly described image resolution 640 x 640 as a third document's batch size. S3 was actually another page of the first PDF.
+- Grouped the model's input passages by stored document identity, preserving passage IDs and page numbers. Clarified that the answer must match the requested property and omit unrelated facts. No question-specific filtering or model training was added.
+- Retrying the same question with the same three retrieved passages returned only the correct batch sizes, 16 and 32. Generation took 47.574 seconds; total request time was 49.06 seconds. Local trace: `.cache/grouped-documents-batch-size.json`.
+- All 33 unit tests passed, including a check that pages from one document stay together while distinct documents with identical filenames remain separate.
+- A separate unsupported question, “What annual salary does each document report?”, correctly returned insufficient evidence with no citations (23.664 seconds generation). Local trace: `.cache/grouped-documents-missing.json`.
+- This is a targeted development check, not proof that the model always follows the instructions. Quote and numeral checks establish where evidence came from, but cannot prove that a claim interprets it correctly. The model still used “first/second document” despite the filename instruction; application citations retain the actual filenames.

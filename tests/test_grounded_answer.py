@@ -1,8 +1,9 @@
 import copy
+import json
 import unittest
 from unittest.mock import patch
 
-from scripts.grounded_answer import find_quote_span, generate_answer, validate_answer
+from scripts.grounded_answer import find_quote_span, generate_answer, make_messages, validate_answer
 
 
 class GroundedAnswerTests(unittest.TestCase):
@@ -18,6 +19,19 @@ class GroundedAnswerTests(unittest.TestCase):
         self.assertEqual(result["answer"], "The batch size was 16. [S1]")
         self.assertEqual(result["citations"][0]["page"], 3)
         self.assertEqual(result["citations"][0]["document_id"], "doc-1")
+
+    def test_prompt_groups_pages_by_document_identity_not_filename(self):
+        sources = {"S1": self.hit,
+                   "S2": {**self.hit, "document_id": "doc-2"},
+                   "S3": {**self.hit, "page": 5, "text": "Image resolution: 640 x 640."}}
+        payload = json.loads(make_messages("What batch size?", sources)[1]["content"])
+        documents = payload["documents"]
+        self.assertEqual(len(documents), 2)
+        self.assertEqual([p["source_id"] for p in documents[0]["passages"]], ["S1", "S3"])
+        self.assertEqual([p["page"] for p in documents[0]["passages"]], [3, 5])
+        self.assertEqual(documents[0]["passages"][1]["text"], sources["S3"]["text"])
+        self.assertEqual(documents[1]["passages"][0]["source_id"], "S2")
+        self.assertEqual(payload["question"], "What batch size?")
 
     def test_rejects_unknown_source_and_fabricated_quote(self):
         for key, value in [("source_id", "S999"), ("quote", "batch size: 64"), ("quote", " ")]:
