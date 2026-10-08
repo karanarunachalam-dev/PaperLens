@@ -151,6 +151,20 @@ Complete designated reference evidence at top three was 5/10 with dense search, 
 
 Real PDFs exposed typography-related quote rejection and serious generation errors, including an unsupported numeric claim attached to a real quote. The code now preserves raw error diagnostics, handles narrow PDF typography differences, checks written numerals against quoted evidence, and uses a revised prompt. These checks remain limited: semantic support and answer completeness require evaluation. See `reports/research-evaluation.md` for the honest before/after assessment and remaining failures, and `docs/research-evaluation.md` for the implementation and reproduction steps. Full local traces are excluded from Git.
 
+## Local question API
+
+Keep the local generator running, then start the Flask API in another terminal:
+
+```bash
+.venv/bin/python -m api.app
+```
+
+Open http://127.0.0.1:8000/documents to see the research papers. The API defaults
+to `data/index/research-eval`; `POST /questions` accepts a JSON `question` and
+returns the answer, citations, and retrieved evidence. This first API component
+uses existing indexed papers. Upload and a frontend are still to come.
+See `docs/backend-api.md` for the request example, code explanation, and errors.
+
 ## References
 
 - [BGE model card: retrieval instructions and model details](https://huggingface.co/BAAI/bge-small-en-v1.5)
