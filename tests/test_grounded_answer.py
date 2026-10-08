@@ -2,7 +2,7 @@ import copy
 import unittest
 from unittest.mock import patch
 
-from scripts.grounded_answer import generate_answer, validate_answer
+from scripts.grounded_answer import find_quote_span, generate_answer, validate_answer
 
 
 class GroundedAnswerTests(unittest.TestCase):
@@ -40,6 +40,41 @@ class GroundedAnswerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "markers"):
             validate_answer(self.raw, self.sources)
 
+    def test_pdf_ligatures_and_word_breaks_keep_original_evidence(self):
+        source = "The default conﬁg-\nuration is MEAN."
+        self.assertEqual(find_quote_span("The default configuration is MEAN.", source), source)
+        source = "We use mean-\nsquared-error loss."
+        self.assertEqual(find_quote_span("mean-squared-error", source), "mean-\nsquared-error")
+        self.assertEqual(find_quote_span("batch size: 16", "batch\n size: 16"), "batch\n size: 16")
+        self.assertEqual(find_quote_span("RAG's retriever", "RAG’s retriever"), "RAG’s retriever")
+
+    def test_quote_normalization_does_not_change_numbers_or_negation(self):
+        for quote, source in [("size: 32", "size: 16"), ("1020", "10-\n20"),
+                              ("The method works", "The method never works"),
+                              ("3.2", "32"), ("nowhere", "now here")]:
+            with self.subTest(quote=quote), self.assertRaises(ValueError):
+                raw = {"insufficient_evidence": False, "statements": [
+                    {"text": "claim", "source_id": "S1", "quote": quote}]}
+                validate_answer(raw, {"S1": {**self.hit, "text": source}})
+
+    def test_rejects_changed_numeric_claim_even_when_quote_is_real(self):
+        self.raw["statements"][0]["text"] = "The batch size was 32."
+        with self.assertRaisesRegex(ValueError, "numeric claim"):
+            validate_answer(self.raw, self.sources)
+
+    def test_numeric_guard_ignores_thousands_separator(self):
+        raw = {"insufficient_evidence": False, "statements": [
+            {"text": "Training ran for 100,000 steps.", "source_id": "S1", "quote": "100000 steps"}]}
+        result = validate_answer(raw, {"S1": {**self.hit, "text": "Training ran for 100000 steps."}})
+        self.assertEqual(result["status"], "answered")
+
+    def test_real_quote_does_not_authorize_fabricated_api_version(self):
+        raw = {"insufficient_evidence": False, "statements": [
+            {"text": "The experiments used GPT-4 API version 4.0.", "source_id": "S1",
+             "quote": "The models were trained using Fairseq."}]}
+        with self.assertRaisesRegex(ValueError, "numeric claim"):
+            validate_answer(raw, {"S1": {**self.hit, "text": "The models were trained using Fairseq."}})
+
     def test_rejects_uncited_answer_and_invalid_structure(self):
         for raw in [[], {}, {"insufficient_evidence": False, "statements": []},
                     {"insufficient_evidence": "false", "statements": []}]:
@@ -65,8 +100,9 @@ class GroundedAnswerTests(unittest.TestCase):
         request.side_effect = [{"prompt": "formatted"}, {"tokens": [1, 2]},
                                {"default_generation_settings": {"n_ctx": 4096}},
                                {"choices": [{"finish_reason": "length"}]}]
-        with self.assertRaisesRegex(ValueError, "incomplete"):
+        with self.assertRaisesRegex(ValueError, "incomplete") as caught:
             generate_answer("What batch size?", [self.hit])
+        self.assertEqual(caught.exception.details["model_response"]["choices"][0]["finish_reason"], "length")
 
 
 if __name__ == "__main__":

@@ -135,4 +135,15 @@ Status: implemented and checked on synthetic PDFs; learner walkthrough and appli
 
 ### Next step
 
-Explain the generation module using `docs/local-generation.md`, then evaluate the complete pipeline on a small real research-paper collection with reference questions. Reusable functions can move from teaching scripts into `src/` when application components are integrated.
+The initial generation walkthrough is in `docs/local-generation.md`. The subsequent real-paper evaluation is recorded below. Reusable functions can move from teaching scripts into `src/` when application components are integrated.
+
+### Module 8: Real-paper evaluation and observed-failure fixes
+
+- Downloaded pinned versions of the Transformer, Sentence-BERT, and original RAG papers into a separate corpus. Recorded SHA-256 checksums; all 45 pages had extracted text and produced 158 chunks. Relevant reference pages were rendered and visually checked.
+- Wrote 12 reference questions before generation: ten answerable and two unsupported. References use physical pages and source-character offsets independent of chunk IDs. No gold answers enter model prompts.
+- Added a reproducible evaluator that records retrieved context, model output, errors, code/configuration hashes, and timings locally. Full traces and PDFs remain excluded from Git.
+- Complete designated evidence at top three: dense 5/10, BM25 7/10, rank fusion 5/10. The metric does not cover every valid alternative passage. Dense remains the default; alternatives are explicit experiments.
+- The baseline exposed incomplete answers, irrelevant but cited claims, unsupported abstentions, typography-related quote failures, and an invented API version attached to real evidence.
+- Added quote matching for PDF ligatures, curly quotes, and line-break hyphens while returning original text. Added a limited numeral-evidence guard and retained rejected responses for debugging.
+- Revised prompt order to put the question after context, explicitly request all parts, and prefer short evidence quotes. Focused reruns and remaining failures are recorded in `reports/research-evaluation.md`; do not claim the development set is held out or that these changes guarantee faithfulness.
+- The next application module will provide upload/question APIs, explicit generation-error responses, and inspectable evidence for the frontend. Tables and comparisons across papers remain priority retrieval limitations.

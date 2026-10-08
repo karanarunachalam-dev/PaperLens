@@ -1,0 +1,361 @@
+{
+  "version": 1,
+  "frozen_before_generation": true,
+  "documents": {
+    "transformer": {
+      "title": "Attention Is All You Need",
+      "filename": "attention-is-all-you-need-v7.pdf",
+      "url": "https://arxiv.org/pdf/1706.03762v7",
+      "landing_url": "https://arxiv.org/abs/1706.03762v7",
+      "sha256": "bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+      "pages": 15
+    },
+    "sbert": {
+      "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks",
+      "filename": "sentence-bert-v1.pdf",
+      "url": "https://arxiv.org/pdf/1908.10084v1",
+      "landing_url": "https://arxiv.org/abs/1908.10084v1",
+      "sha256": "92366d22fc0521350d6cbe0ad72bcee754f90e88181d7b4a8e2adb1e7e594fec",
+      "pages": 11
+    },
+    "rag": {
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "filename": "rag-v4.pdf",
+      "url": "https://arxiv.org/pdf/2005.11401v4",
+      "landing_url": "https://arxiv.org/abs/2005.11401v4",
+      "sha256": "23e3249e9a1e75418d82efecab0ea8c4d033b89c93742f63208d47ce01f21233",
+      "pages": 19
+    }
+  },
+  "notes": [
+    "Reference answers and physical pages were checked before running generation.",
+    "Evidence uses offsets into pinned pypdf extraction, not chunk IDs; groups are required facts and alternatives are interchangeable support.",
+    "No answer text or reference offsets are passed to the model.",
+    "This small manually constructed set is not a representative benchmark.",
+    "Full paper text and runtime traces remain in ignored local data directories."
+  ],
+  "cases": [
+    {
+      "id": "t_layers",
+      "question": "How many layers are in the encoder and decoder stacks described in Attention Is All You Need?",
+      "document_filter": "transformer",
+      "answerable": true,
+      "reference_answer": "Six layers in each stack.",
+      "evidence_groups": [
+        {
+          "label": "encoder layers",
+          "alternatives": [
+            {
+              "document": "transformer",
+              "page": 3,
+              "start_char": 340,
+              "end_char": 362,
+              "text_sha256": "1fbec2561369ab32de2eb52afb9080d2dc346c1ef59c7994e913cf0cc122a1f0"
+            }
+          ]
+        },
+        {
+          "label": "decoder layers",
+          "alternatives": [
+            {
+              "document": "transformer",
+              "page": 3,
+              "start_char": 967,
+              "end_char": 997,
+              "text_sha256": "b17a37107ca05f8614f8c5475511b8fbf119c8135c5dfd32b1e0529378d0c6d5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_training",
+      "question": "Which GPUs were used to train the base Transformer, and for how many steps?",
+      "document_filter": "transformer",
+      "answerable": true,
+      "reference_answer": "Eight NVIDIA P100 GPUs; 100,000 training steps.",
+      "evidence_groups": [
+        {
+          "label": "hardware",
+          "alternatives": [
+            {
+              "document": "transformer",
+              "page": 7,
+              "start_char": 2412,
+              "end_char": 2430,
+              "text_sha256": "fb0da6ea1ef3926c384a62fc331876b9ba01fc4be6ec69957ba6e24758166357"
+            }
+          ]
+        },
+        {
+          "label": "steps",
+          "alternatives": [
+            {
+              "document": "transformer",
+              "page": 7,
+              "start_char": 2595,
+              "end_char": 2608,
+              "text_sha256": "64f16939eaa452e0c8038549f8820cb9d58433eadd782b9e3bcb137fa257a023"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_warmup",
+      "question": "According to Attention Is All You Need, how many warmup steps were used?",
+      "document_filter": null,
+      "answerable": true,
+      "reference_answer": "4,000 steps.",
+      "evidence_groups": [
+        {
+          "label": "warmup steps",
+          "alternatives": [
+            {
+              "document": "transformer",
+              "page": 7,
+              "start_char": 3202,
+              "end_char": 3221,
+              "text_sha256": "acd317b4dbe430e2c4408208ceba15cdcacfcb553e0cd77a9f06e80f7b63dff4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "t_table",
+      "question": "In Table 3 of Attention Is All You Need, how many parameters does the base model have?",
+      "document_filter": "transformer",
+      "answerable": true,
+      "reference_answer": "65 million parameters. The table reports parameter counts in millions.",
+      "evidence_groups": [
+        {
+          "label": "table units",
+          "alternatives": [
+            {
+              "document": "transformer",
+              "page": 9,
+              "start_char": 372,
+              "end_char": 401,
+              "text_sha256": "6e5d0ba28a9568caa82989d2b1d4b9a568d2410683610b6d648a6a26916d103d"
+            }
+          ]
+        },
+        {
+          "label": "base row",
+          "alternatives": [
+            {
+              "document": "transformer",
+              "page": 9,
+              "start_char": 402,
+              "end_char": 451,
+              "text_sha256": "c0376ca7fe56d0fc7b12c15f04760d81c0b5023d18e13d44055e7792d21f3452"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s_pooling",
+      "question": "What pooling strategy is the default configuration in Sentence-BERT?",
+      "document_filter": "sbert",
+      "answerable": true,
+      "reference_answer": "Mean pooling.",
+      "evidence_groups": [
+        {
+          "label": "default pooling",
+          "alternatives": [
+            {
+              "document": "sbert",
+              "page": 3,
+              "start_char": 1317,
+              "end_char": 1352,
+              "text_sha256": "901d8d8a9e121e4abd631f8ee492f2d1d0c7e235b24ce11043bc5af19efd832a"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s_loss",
+      "question": "Which loss function does Sentence-BERT use for its regression objective?",
+      "document_filter": "sbert",
+      "answerable": true,
+      "reference_answer": "Mean squared error.",
+      "evidence_groups": [
+        {
+          "label": "regression loss",
+          "alternatives": [
+            {
+              "document": "sbert",
+              "page": 3,
+              "start_char": 2438,
+              "end_char": 2496,
+              "text_sha256": "5760c09eb4a689462ab87e6a943d8e802dba106074d650e44fc92ca65c92dc66"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r_components",
+      "question": "Which retriever and generator are used in the original RAG paper?",
+      "document_filter": "rag",
+      "answerable": true,
+      "reference_answer": "The DPR retriever and BART-large generator.",
+      "evidence_groups": [
+        {
+          "label": "retriever",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 3,
+              "start_char": 2057,
+              "end_char": 2072,
+              "text_sha256": "f61a44829e01a8a569151c24756896a84e07ee7707909629ea70ef3fef7ce3a5"
+            }
+          ]
+        },
+        {
+          "label": "generator",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 3,
+              "start_char": 2955,
+              "end_char": 2972,
+              "text_sha256": "bb1c9063dd50f93c9d0f81081f6f214580e21383fde871ede4e38e71024d20b7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r_corpus",
+      "question": "Which Wikipedia snapshot did the RAG paper use, how long were its chunks, and how many documents resulted?",
+      "document_filter": "rag",
+      "answerable": true,
+      "reference_answer": "December 2018 Wikipedia; disjoint 100-word chunks; approximately 21 million indexed documents.",
+      "evidence_groups": [
+        {
+          "label": "snapshot",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 4,
+              "start_char": 2108,
+              "end_char": 2126,
+              "text_sha256": "44a1bc88fed8c6d3b4d2fe4915d6f1549c19ce12323fd4181253e3e1fac626ce"
+            }
+          ]
+        },
+        {
+          "label": "chunks",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 4,
+              "start_char": 2174,
+              "end_char": 2189,
+              "text_sha256": "50818bf2e35ed2aab0f3e702d7c34df33f3a801df2c0a05a7e2b95c5e37387b7"
+            }
+          ]
+        },
+        {
+          "label": "count",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 4,
+              "start_char": 2210,
+              "end_char": 2223,
+              "text_sha256": "33a1b6f32ac897177f514365827d2b830bdc3c10c3e9aa1d83a490f7b31af32f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r_variants",
+      "question": "How does the document choice differ between RAG-Sequence and RAG-Token?",
+      "document_filter": "rag",
+      "answerable": true,
+      "reference_answer": "Sequence conditions a whole output sequence on one latent document; Token can use a different latent document for each generated token, with probabilities marginalized over retrieved documents.",
+      "evidence_groups": [
+        {
+          "label": "sequence",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 3,
+              "start_char": 750,
+              "end_char": 816,
+              "text_sha256": "ee71a4e8a8a47b0fedd6e893dcc49982fedf92ddc89df11125b7388936ddbeb8"
+            }
+          ]
+        },
+        {
+          "label": "token",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 3,
+              "start_char": 1300,
+              "end_char": 1361,
+              "text_sha256": "44756617537fa5b63d29d1adb53839a1a57d24205c1b41a620dee46743d5d0f1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cross_encoders",
+      "question": "Compare the pretrained neural models used by Sentence-BERT and the generator used by RAG.",
+      "document_filter": null,
+      "answerable": true,
+      "reference_answer": "Sentence-BERT builds sentence encoders from BERT or RoBERTa; RAG uses BART-large for generation.",
+      "evidence_groups": [
+        {
+          "label": "sentence encoders",
+          "alternatives": [
+            {
+              "document": "sbert",
+              "page": 3,
+              "start_char": 713,
+              "end_char": 760,
+              "text_sha256": "1570a7cb4757d220039c7474080d3164b76254f41cfc6e43d0e8b8178f53fb2e"
+            }
+          ]
+        },
+        {
+          "label": "RAG generator",
+          "alternatives": [
+            {
+              "document": "rag",
+              "page": 3,
+              "start_char": 2955,
+              "end_char": 2972,
+              "text_sha256": "bb1c9063dd50f93c9d0f81081f6f214580e21383fde871ede4e38e71024d20b7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "missing_salary",
+      "question": "What annual salary was paid to the first author of Attention Is All You Need?",
+      "document_filter": "transformer",
+      "answerable": false,
+      "reference_answer": "Insufficient evidence: author salary is not reported.",
+      "evidence_groups": []
+    },
+    {
+      "id": "missing_gpt4",
+      "question": "Which GPT-4 API model version did the RAG experiments use?",
+      "document_filter": "rag",
+      "answerable": false,
+      "reference_answer": "Insufficient evidence for the requested API version. The paper describes BART, not GPT-4.",
+      "evidence_groups": []
+    }
+  ]
+}

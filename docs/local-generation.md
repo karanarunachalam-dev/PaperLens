@@ -36,7 +36,7 @@ Read these functions in order:
 2. `make_messages()` in `scripts/grounded_answer.py` assigns instructions to the system message and serializes the question/passages into the user message. The instructions require evidence, treat document instructions as untrusted text, and allow abstention.
 3. `generate_answer()` counts the formatted prompt using Qwen's tokenizer. BGE's token counts are not interchangeable with Qwen's. Input plus the output allowance must fit the context window; otherwise we return an explicit error instead of silently removing evidence.
 4. The local `/v1/chat/completions` request runs Qwen. The server constrains output to a JSON shape. Temperature zero reduces sampling variability; it does not establish correctness.
-5. `validate_answer()` checks output structure, source existence, and whether each evidence quote occurs in its cited passage, allowing whitespace differences. It attaches original PDF metadata and adds citation markers.
+5. `validate_answer()` checks output structure, source existence, and evidence quotes. After real-PDF evaluation it also allows narrow PDF typography differences, returns the original evidence slice, and rejects written numerals absent from the quoted evidence. It attaches original PDF metadata and adds citation markers. See `docs/research-evaluation.md` for the scope and limitations of these checks.
 
 The important reasoning is **retrieve text → construct context → generate → verify references**. HTTP requests, command-line parsing, downloading, and JSON serialization are supporting code.
 
@@ -47,7 +47,7 @@ The important reasoning is **retrieve text → construct context → generate �
 - A fabricated source or quote: reject the response and report a generation error.
 - Output truncation, unavailable server, or oversized context: report an error. These are not evidence that the documents lack an answer.
 
-A valid quote does **not** prove that the accompanying claim follows from it. For example, quoting “batch size: 16” while claiming “batch size: 32” is still a semantic error that these mechanical checks cannot detect. JSON constraints guarantee structure only. Prompt instructions reduce risk but are not a complete defense against malicious documents. Real-paper evaluation must measure answer correctness, faithfulness, and citation support separately.
+A valid quote does **not** prove that the accompanying claim follows from it. The added numeral check catches the specific 16-versus-32 mismatch; many other semantic errors remain undetected. JSON constraints guarantee structure only. Prompt instructions reduce risk but are not a complete defense against malicious documents. Real-paper evaluation measures answer correctness, faithfulness, and citation support separately.
 
 ## Run it
 

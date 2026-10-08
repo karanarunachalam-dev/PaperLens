@@ -6,20 +6,27 @@ from pathlib import Path
 import time
 
 from scripts.grounded_answer import generate_answer
+from scripts.hybrid_search import search_hybrid, search_keywords
 from scripts.local_index import open_index, search_index
 from scripts.search_documents import load_model
 from scripts.semantic_search_demo import QUERY_PREFIX
 
 
-def retrieve(question, model, db, top_k=3, document_id=None):
+def retrieve(question, model, db, top_k=3, document_id=None, method="dense"):
     if not question.strip() or not 1 <= top_k <= 10:
         raise ValueError("Provide a nonempty question and --top-k between 1 and 10.")
+    if method not in {"dense", "bm25", "hybrid"}:
+        raise ValueError("Retrieval method must be dense, bm25, or hybrid.")
     query = QUERY_PREFIX + question.strip()
     if len(model.tokenizer.encode(query)) > model.max_seq_length:
         raise ValueError("Question exceeds the embedding model's token limit; shorten it.")
-    vector = model.encode(query, convert_to_numpy=True)
+    vector = model.encode(query, convert_to_numpy=True) if method != "bm25" else None
     client = open_index(db)
     try:
+        if method == "hybrid":
+            return search_hybrid(client, question, vector, top_k, document_id)
+        if method == "bm25":
+            return search_keywords(client, question, top_k, document_id)
         return [{"score": hit.score, **hit.payload}
                 for hit in search_index(client, vector, top_k, document_id)]
     finally:
@@ -33,11 +40,12 @@ def main():
     parser.add_argument("--db", type=Path, default=root / "data/index/qdrant")
     parser.add_argument("--document-id")
     parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--method", choices=["dense", "bm25", "hybrid"], default="dense")
     parser.add_argument("--json", action="store_true", help="Include retrieved text and model timings.")
     args = parser.parse_args()
     started = time.perf_counter()
     try:
-        matches = retrieve(args.question, load_model(), args.db, args.top_k, args.document_id)
+        matches = retrieve(args.question, load_model(), args.db, args.top_k, args.document_id, args.method)
         result = generate_answer(args.question, matches)
         result["total_seconds"] = round(time.perf_counter() - started, 3)
     except (OSError, ValueError, RuntimeError, KeyError, IndexError, TypeError) as error:

@@ -4,7 +4,7 @@ A learning-first document question-answering project with inspectable source evi
 
 ## Status
 
-Day 1 started on October 5, 2026. Implemented components: standalone semantic search, page-aware PDF extraction, two token-bounded chunking strategies, persistent Qdrant document retrieval, and local answer generation with source references. The CLI pipeline works on synthetic PDFs; evaluation on real research papers and the API/UI are still outstanding.
+Day 1 started on October 5, 2026. Implemented components: semantic search, page-aware PDF extraction, two chunking strategies, persistent Qdrant retrieval, and local answer generation with source references. A fixed evaluation on three real research papers now exposes retrieval, citation, and generation failures and checks targeted fixes. The API/UI and broader quality evaluation are still outstanding.
 
 ## Day 1 objective
 
@@ -78,7 +78,7 @@ The sample is synthetic: page 1 states a batch size, page 2 is deliberately blan
 
 The extractor strips outer whitespace only. It preserves punctuation and does not guess how to repair tables, formulas, line wrapping, or hyphenated words. Empty extraction across the entire file is an explicit failure. Encrypted PDFs are currently unsupported; malformed files report parsing errors. No OCR is performed, and mixed image/text documents require manual review of empty pages. This local utility is not yet hardened as an upload service.
 
-Five extraction tests passed: text/page provenance across a blank page, content-based IDs, all-blank input, encrypted input, and malformed input. The end-to-end CLI also produced three records for the sample and warned about page 2. These checks use generated fixtures; extraction quality on a real research-paper collection remains untested.
+Five extraction tests passed: text/page provenance across a blank page, content-based IDs, all-blank input, encrypted input, and malformed input. The end-to-end CLI also produced three records for the sample and warned about page 2. These initial checks use generated fixtures; the later real-paper evaluation is described below.
 
 ## Chunking and comparison
 
@@ -110,7 +110,7 @@ The default collection uses paragraph-aware chunks with a 320-token content cap 
 
 The local client's dense-vector path performs exact scoring. This stage demonstrates persistence and filtering, not ANN speed. Search still returns similar passages for unsupported questions; answerability is not inferred from scores. Failed multi-document imports may leave earlier documents successfully indexed, and replacing a document across multiple batches is not transactional; repeating the import repairs an interrupted update.
 
-Storage-level tests use controlled vectors to check persistence, cosine scores, filters, duplicate imports, stale-chunk cleanup, and invalid-vector rejection. The actual embedding integration uses two synthetic PDFs. Details and observed results are recorded in `reports/day2-persistence.json` and `reports/day2-persistence.md`; real research-paper evaluation is still outstanding.
+Storage-level tests use controlled vectors to check persistence, cosine scores, filters, duplicate imports, stale-chunk cleanup, and invalid-vector rejection. The initial embedding integration uses two synthetic PDFs. Details and observed results are recorded in `reports/day2-persistence.json` and `reports/day2-persistence.md`; a separate index is used for the later real-paper evaluation.
 
 ## Local answers with citations
 
@@ -135,6 +135,21 @@ Use `--document-id` to select one PDF and `--json` to inspect retrieved evidence
 The application supplies retrieved text to the generator, checks its context budget with the generator's tokenizer, and validates source IDs and quoted evidence. Original filenames and physical PDF page numbers come from stored metadata. Missing evidence produces an explicit abstention; invalid citations, output truncation, and server failures produce errors. These checks cannot establish semantic faithfulness or guarantee protection against document prompt injection.
 
 Read `docs/local-generation.md` for the short concept/code walkthrough and `reports/day3-local-generation.md` for measured results, including the initial incorrect refusals and the prompt correction. The six synthetic development cases are reproducible with `.venv/bin/python -m scripts.benchmark_local_generator` while the server is running and the index contains the two sample PDFs. The command overwrites the final JSON report; the separately saved initial report remains intact.
+
+## Real-paper evaluation
+
+Three pinned papers produce 45 page records and 158 chunks in `data/index/research-eval`, separate from the demo index. Twelve reference questions were fixed before generation. They include factual questions, a table, a comparison across papers, and two unsupported requests.
+
+```bash
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.evaluate_research --prepare --retrieval-only --output data/processed/research-eval/my-retrieval-run.json
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.answer_question "What pooling strategy does Sentence-BERT use by default?" --db data/index/research-eval
+```
+
+The answer command requires the local model server. Add `--method bm25` or `--method hybrid` to experiment with keyword retrieval or rank fusion; dense remains the default. Scores are labeled by method and are not answer-confidence probabilities. The full evaluator can also compare these modes; use a fresh output filename each time.
+
+Complete designated reference evidence at top three was 5/10 with dense search, 7/10 with BM25, and 5/10 with rank fusion. This is a small development comparison, not general accuracy. References are not exhaustive, and matching their spans does not guarantee sufficient surrounding context.
+
+Real PDFs exposed typography-related quote rejection and serious generation errors, including an unsupported numeric claim attached to a real quote. The code now preserves raw error diagnostics, handles narrow PDF typography differences, checks written numerals against quoted evidence, and uses a revised prompt. These checks remain limited: semantic support and answer completeness require evaluation. See `reports/research-evaluation.md` for the honest before/after assessment and remaining failures, and `docs/research-evaluation.md` for the implementation and reproduction steps. Full local traces are excluded from Git.
 
 ## References
 
