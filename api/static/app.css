@@ -63,6 +63,9 @@ textarea::placeholder { color: #778078; }
 .source-card { border-left: 3px solid #86a98e; background: #f3f6ef; padding: 14px 16px; margin-bottom: 12px; border-radius: 0 7px 7px 0; }
 .source-label { font-size: 12px; font-weight: 650; overflow-wrap: anywhere; margin-bottom: 8px; }
 blockquote, .passage-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.pdf-link { color: var(--green); text-underline-offset: 3px; }
+.source-card > .pdf-link { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 600; }
+.pdf-error-page { max-width: 720px; margin: 50px auto; }
 details { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 24px; }
 summary { cursor: pointer; font-size: 13px; font-weight: 600; }
 details > .muted { margin-top: 12px; font-size: 12px; }

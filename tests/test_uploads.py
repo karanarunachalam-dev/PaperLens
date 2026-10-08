@@ -143,6 +143,7 @@ class UploadTests(unittest.TestCase):
             response = other.post("/documents", data={"file": (io.BytesIO(b"%PDF-"), "other.pdf")})
             self.assertEqual(response.json["error"]["code"], "busy")
             self.assertEqual(other.delete("/documents/" + "a" * 64).json["error"]["code"], "busy")
+            self.assertEqual(other.get("/documents/" + "a" * 64 + "/pdf").status_code, 503)
             return np.tile(self.vector, (len(texts), 1))
         self.model.encode.side_effect = during_embedding
         self.assertEqual(self.upload(self.pdf()).status_code, 201)

@@ -1,13 +1,16 @@
 """Serve the existing RAG pipeline through a small local Flask API."""
 
+from io import BytesIO
 from pathlib import Path
+import re
 from threading import Lock
 import time
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 from werkzeug.exceptions import HTTPException
 
 from api.uploads import MAX_UPLOAD_BYTES, UploadError, can_delete_upload, delete_upload, index_upload
+from api.pdf_files import PdfFileError, read_original_pdf
 from scripts.answer_question import retrieve
 from scripts.grounded_answer import generate_answer
 from scripts.local_index import list_documents, open_index
@@ -17,7 +20,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB = ROOT / "data/index/research-eval"
 
 
-def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads"):
+def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads",
+               reference_dir=ROOT / "data/raw/research-eval"):
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
     db = Path(db)
@@ -82,6 +86,42 @@ def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads"):
         except (OSError, RuntimeError) as exc:
             app.logger.warning("Index unavailable: %s", exc)
             return error("index_unavailable", "Cannot open the index. Close other indexing or search processes.", 503)
+        finally:
+            work_lock.release()
+
+    @app.get("/documents/<document_id>/pdf")
+    def original_pdf(document_id):
+        def pdf_error(message, status):
+            if request.accept_mimetypes.best_match(["text/html", "application/json"]) == "text/html":
+                return render_template("pdf-error.html", message=message), status
+            return error("pdf_unavailable", message, status)
+
+        if not re.fullmatch(r"[0-9a-f]{64}", document_id):
+            return pdf_error("Invalid document ID.", 400)
+        problem = acquire_index()
+        if problem is not None:
+            return pdf_error("The document collection is unavailable or busy. Please try again shortly.", 503)
+        try:
+            client = open_index(db)
+            try:
+                record = next((d for d in list_documents(client) if d["document_id"] == document_id), None)
+            finally:
+                client.close()
+            if record is None:
+                return pdf_error("This document is no longer in the collection. Refresh the assistant and ask again.", 404)
+            contents, filename = read_original_pdf(record, upload_dir, reference_dir)
+            # Serve a verified snapshot so a concurrent filesystem change cannot
+            # substitute different bytes after the hash check. Byte ranges work too.
+            response = send_file(BytesIO(contents), mimetype="application/pdf", as_attachment=False,
+                                 download_name=filename, conditional=True, etag=document_id, max_age=0)
+            response.headers["Cache-Control"] = "no-store"
+            response.headers["X-Content-Type-Options"] = "nosniff"
+            return response
+        except PdfFileError as exc:
+            return pdf_error(str(exc), exc.status)
+        except (OSError, RuntimeError) as exc:
+            app.logger.warning("PDF unavailable: %s", exc)
+            return pdf_error("The original PDF could not be opened. Check the API terminal and try again.", 503)
         finally:
             work_lock.release()
 

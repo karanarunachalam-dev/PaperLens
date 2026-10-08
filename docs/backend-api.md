@@ -56,6 +56,15 @@ removes a web-uploaded document's stored copy and Qdrant passages. Imported pape
 are protected by the server. The webpage asks for confirmation before calling
 this endpoint; see `docs/pdf-upload.md` for deletion errors and retry behavior.
 
+`GET /documents/<document_id>/pdf` serves an indexed document's verified original
+as an inline PDF. The frontend appends `#page=<physical-page>` for browser viewing.
+This supports web uploads and the three pinned research PDFs. The endpoint checks
+the indexed identity and local storage roots, rejects symbolic links and changed
+file contents, and supports byte-range requests from PDF viewers. Responses use
+`Cache-Control: no-store`. Missing documents/files return 404, invalid IDs 400,
+changed/unsafe stored files 409, and busy/unavailable storage 503. Browser requests
+receive an HTML error page; API requests receive the usual JSON error format.
+
 Read `api/app.py`:
 
 1. `create_app()` creates the Flask app and loads BGE once. It accepts a different

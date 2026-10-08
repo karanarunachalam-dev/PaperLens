@@ -162,6 +162,9 @@ Keep the local generator running, then start the Flask API in another terminal:
 Open http://127.0.0.1:8000/ for the question page: choose a paper or search across
 the collection, upload a PDF, ask a question, and inspect its source quotes. The page shows
 elapsed waiting time, missing-evidence answers, and service errors separately.
+Click an answer citation such as **[S1]** or **Open PDF at page …** on its source
+card to open the original PDF at the physical page in a new tab. The quote remains
+beside the answer for comparison. Exact passage highlighting is a later step.
 If the API was already running before the page was added, restart just the API
 to load the new route; keep the local generator running.
 

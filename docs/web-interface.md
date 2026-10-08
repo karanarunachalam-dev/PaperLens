@@ -43,8 +43,27 @@ may still be running on the server, so the message advises waiting before retry.
 
 Answer text, filenames, quotes, and passages are inserted using `textContent`,
 not interpreted as HTML. This also means Markdown in model output stays plain
-text. Source cards currently show names and page numbers, not PDF download links.
+text. Answer citation markers and source-card links open the original PDF at its
+cited physical page in a new tab. The evidence quote stays visible in the assistant.
 Conversation history and streaming are not implemented here.
+
+## Open a citation in its PDF
+
+Click `[S1]` in an answer or **Open PDF at page …** in the corresponding source
+card. `pdfLink()` builds a local link using the stored document ID and a positive
+physical page number: `/documents/<id>/pdf#page=3`, for example. Only recognized
+citation markers become links; all remaining model text still uses text nodes.
+The link opens a new tab with the browser's PDF viewer. Page-jump support depends
+on that viewer; the source card always states the physical page explicitly.
+
+The API resolves uploaded originals from their content-specific storage folder
+and the three reference PDFs from their pinned manifest. It checks that the file's
+SHA-256 still matches the indexed document before serving a PDF snapshot inline.
+It accepts no client-supplied filesystem path. Missing/deleted or modified PDFs
+open a readable error page instead of showing an unrelated or changed file.
+
+This component opens the correct page; it does not highlight the exact words.
+Locating the quoted text and its page coordinates is the next separate step.
 
 ## Upload your own PDF
 

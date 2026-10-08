@@ -128,10 +128,26 @@ async function deleteDocument(paper) {
   }
 }
 
+function pdfLink(citation, label) {
+  if (!/^[0-9a-f]{64}$/.test(citation.document_id || "") || !Number.isInteger(citation.page) || citation.page < 1) return null;
+  const link = textElement("a", label, "pdf-link");
+  link.href = `/documents/${citation.document_id}/pdf#page=${citation.page}`;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.setAttribute("aria-label", `Open ${citation.source}, physical page ${citation.page} (new tab)`);
+  return link;
+}
+
 function renderAnswer(data, submittedQuestion) {
   byId("answer-title").textContent = data.status === "insufficient_evidence" ? "Not enough evidence" : "Your answer";
   byId("answered-question").textContent = submittedQuestion;
-  byId("answer-text").textContent = data.answer;
+  const answer = byId("answer-text");
+  answer.replaceChildren();
+  const sources = new Map(data.citations.map((citation) => [`[${citation.source_id}]`, citation]));
+  for (const part of data.answer.split(/(\[S\d+\])/g)) {
+    const citation = sources.get(part);
+    answer.append((citation && pdfLink(citation, part)) || document.createTextNode(part));
+  }
   byId("answer-time").textContent = `${Number(data.total_seconds).toFixed(1)}s total`;
   const citations = byId("citations");
   citations.replaceChildren();
@@ -139,6 +155,8 @@ function renderAnswer(data, submittedQuestion) {
     const card = textElement("article", "", "source-card");
     card.append(textElement("p", `[${citation.source_id}] ${citation.source} · Physical page ${citation.page}`, "source-label"));
     card.append(textElement("blockquote", citation.quote));
+    const link = pdfLink(citation, `Open PDF at page ${citation.page} ↗`);
+    if (link) card.append(link);
     citations.append(card);
   }
   byId("sources-section").hidden = data.citations.length === 0;
