@@ -193,3 +193,14 @@ The initial generation walkthrough is in `docs/local-generation.md`. The subsequ
 - Retained a clearer API error explaining that the evidence quote did not match the document text. It still returns HTTP 502 and withholds the rejected answer. Added checks for this API response and rejection of excerpts stitched across separate paper sections.
 - All 52 automated tests passed after restoring the original research prompt.
 - The resume remains stored; selecting a research paper excludes it from that question. No uploaded documents were deleted, no model weights changed, and no claim is made that this error-message improvement fixes generation accuracy.
+
+### Module 12: Delete web-uploaded documents
+
+- After the learner manually removed an uploaded PDF, its two indexed passages still appeared in Qdrant. Removed that specific document's points and verified the three original research papers and their 158 passages were preserved. This demonstrated that filesystem deletion and index deletion are separate operations.
+- Added Delete buttons only for web uploads, a filename-specific browser confirmation, and `DELETE /documents/<document_id>`. The server independently verifies eligibility, removes only the stored app copy and matching document-ID points, and serializes deletion with uploads/questions. The file originally chosen outside app storage is not deleted.
+- New uploads carry `origin: web_upload` in Qdrant, so removing their stored file/folder manually does not remove deletion eligibility. Older uploads can be recognized by an existing upload storage folder. Imported papers remain protected, including when their identical bytes are submitted through the upload form.
+- Validate document IDs and file paths, reject symlinks, tolerate already-missing PDFs, and leave unrelated files alone. File-removal failure retains indexed data; index-removal failure leaves a record that can be retried. This is not a cross-storage crash transaction.
+- The list, selected paper, and displayed answer/evidence update after successful deletion. Failures keep a visible retry message; Cancel sends no request.
+- All 60 automated tests passed, including eight deletion tests and expanded locking checks. Actual-browser/API/index/storage checks with temporary PDFs and controlled embeddings passed for eligibility, confirmation/cancel, failure/retry, disabled controls, file removal, stale-result clearing, manual-file-removal recovery, and preservation of the imported paper. No model generation was required.
+- Inspected desktop and 390-pixel mobile screenshots and verified no horizontal overflow. Local browser script: `.cache/check-delete-live.cjs`; screenshots: `.cache/delete-desktop.png` and `.cache/delete-mobile.png`. Temporary test server and data were removed; the user's running API/model processes were not restarted.
+- Restart the API and refresh the page to enable Delete. Usage and error semantics are documented in `docs/pdf-upload.md`.

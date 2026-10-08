@@ -7,6 +7,7 @@ const documentSelect = byId("document");
 let papersReady = false;
 let busy = false;
 let uploading = false;
+let deleting = false;
 let loadingDocuments = false;
 
 // Model output and PDF text are untrusted text, never HTML.
@@ -23,12 +24,13 @@ function updateControls() {
   question.disabled = busy;
   byId("example-button").disabled = busy;
   byId("reload-documents").disabled = busy || loadingDocuments;
-  byId("ask-button").textContent = busy && !uploading ? "Working…" : "Ask question ↗";
-  byId("answer-panel").setAttribute("aria-busy", String(busy && !uploading));
+  byId("ask-button").textContent = busy && !uploading && !deleting ? "Working…" : "Ask question ↗";
+  byId("answer-panel").setAttribute("aria-busy", String(busy && !uploading && !deleting));
   byId("pdf-file").disabled = busy || loadingDocuments;
   byId("upload-button").disabled = busy || loadingDocuments;
   byId("upload-button").textContent = uploading ? "Adding…" : "Add PDF";
   byId("upload-form").setAttribute("aria-busy", String(uploading));
+  document.querySelectorAll(".delete-document").forEach((button) => { button.disabled = busy || loadingDocuments; });
 }
 
 async function fetchJSON(url, options = {}, timeoutMs = 15000) {
@@ -63,7 +65,16 @@ async function loadDocuments(selectedId = documentSelect.value) {
   try {
     const data = await fetchJSON("/documents");
     for (const paper of data.documents) {
-      byId("document-list").append(textElement("li", paper.source));
+      const item = textElement("li", "");
+      item.append(textElement("span", paper.source, "document-name"));
+      if (paper.can_delete === true) {
+        const button = textElement("button", "Delete", "delete-document");
+        button.type = "button";
+        button.setAttribute("aria-label", `Delete ${paper.source}`);
+        button.addEventListener("click", () => deleteDocument(paper));
+        item.append(button);
+      }
+      byId("document-list").append(item);
       documentSelect.add(new Option(paper.source, paper.document_id));
     }
     papersReady = data.documents.length > 0;
@@ -77,6 +88,42 @@ async function loadDocuments(selectedId = documentSelect.value) {
     return false;
   } finally {
     loadingDocuments = false;
+    updateControls();
+  }
+}
+
+async function deleteDocument(paper) {
+  if (busy || loadingDocuments) return;
+  if (!window.confirm(`Delete “${paper.source}”?\n\nThis removes its stored PDF and searchable passages from this app. This cannot be undone here.`)) return;
+  busy = true;
+  deleting = true;
+  updateControls();
+  byId("library-error").hidden = true;
+  byId("library-action-status").textContent = `Deleting ${paper.source}…`;
+  try {
+    await fetchJSON(`/documents/${encodeURIComponent(paper.document_id)}`, { method: "DELETE" });
+    // Clear old results so a removed source is not still displayed as current evidence.
+    byId("answer-content").hidden = true;
+    byId("answer-text").textContent = "";
+    byId("answered-question").textContent = "";
+    byId("citations").replaceChildren();
+    byId("retrieved-passages").replaceChildren();
+    byId("answer-time").textContent = "";
+    byId("answer-title").textContent = "Your answer";
+    byId("request-status").textContent = "";
+    byId("request-error").hidden = true;
+    byId("upload-status").textContent = "";
+    byId("empty-message").hidden = false;
+    byId("empty-message").textContent = "The collection has changed. Ask a question to get a fresh answer.";
+    const refreshed = await loadDocuments();
+    byId("library-action-status").textContent = `${paper.source} was deleted.${refreshed ? "" : " Refresh the paper list to update it."}`;
+  } catch (error) {
+    byId("library-action-status").textContent = "";
+    byId("library-error").textContent = error.message;
+    byId("library-error").hidden = false;
+  } finally {
+    deleting = false;
+    busy = false;
     updateControls();
   }
 }

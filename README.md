@@ -174,6 +174,13 @@ automatically; identical file contents reuse the existing document. Original
 uploads stay locally in `data/raw/uploads/`, excluded from Git. Scanned/image-only
 and encrypted PDFs are not supported. See `docs/pdf-upload.md` for details.
 
+Web-uploaded PDFs have a **Delete** button in the paper list. Confirm the filename
+to remove that upload's stored copy and indexed passages; the original three
+research papers are protected. The list and selector refresh after deletion.
+Deleting a PDF manually from disk does not remove its Qdrant passages—use this
+button to remove both. New uploads remain deletable even if their stored file
+has already been removed manually.
+
 Uploads join the application's existing index. To reproduce the fixed three-paper
 evaluation after adding documents, use a separate index, for example
 `scripts.evaluate_research --prepare --db data/index/evaluation-only` together with

@@ -79,11 +79,12 @@ def list_documents(client):
     offset = None
     while True:
         points, offset = client.scroll(COLLECTION, limit=256, offset=offset,
-                                       with_payload=["document_id", "source"], with_vectors=False)
+                                       with_payload=["document_id", "source", "origin"], with_vectors=False)
         for point in points:
             payload = point.payload
             record = documents.setdefault(payload["document_id"], {
-                "document_id": payload["document_id"], "source": payload["source"], "chunks": 0})
+                "document_id": payload["document_id"], "source": payload["source"], "chunks": 0,
+                "origin": payload.get("origin", "imported")})
             record["chunks"] += 1
         if offset is None:
             break

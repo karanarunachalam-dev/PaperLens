@@ -10,7 +10,8 @@ import numpy as np
 from api.app import create_app
 from api.uploads import MAX_UPLOAD_BYTES, MAX_UPLOAD_PAGES
 from scripts.chunk_pdf import load_tokenizer
-from scripts.local_index import list_documents, open_index, search_index, upsert_document
+from scripts.local_index import COLLECTION, document_filter, open_index, search_index, upsert_document
+from scripts.search_documents import index_pdf
 from test_extract_pdf import write_fixture
 
 
@@ -141,10 +142,107 @@ class UploadTests(unittest.TestCase):
             self.assertEqual(other.post("/questions", json={"question": "Hi"}).json["error"]["code"], "busy")
             response = other.post("/documents", data={"file": (io.BytesIO(b"%PDF-"), "other.pdf")})
             self.assertEqual(response.json["error"]["code"], "busy")
+            self.assertEqual(other.delete("/documents/" + "a" * 64).json["error"]["code"], "busy")
             return np.tile(self.vector, (len(texts), 1))
         self.model.encode.side_effect = during_embedding
         self.assertEqual(self.upload(self.pdf()).status_code, 201)
         self.assertEqual(self.client.get("/documents").status_code, 200)
+
+    def test_delete_removes_only_chosen_upload_and_allows_reupload(self):
+        first_bytes = self.pdf()
+        first = self.upload(first_bytes).json["document"]
+        second = self.upload(self.pdf(("Different paper.",))).json["document"]
+        self.assertTrue(all(d["can_delete"] for d in self.client.get("/documents").json["documents"]))
+        response = self.client.delete("/documents/" + first["document_id"])
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual(response.json["status"], "deleted")
+        self.assertFalse((self.uploads / first["document_id"]).exists())
+        self.assertTrue((self.uploads / second["document_id"] / second["source"]).exists())
+        remaining = self.client.get("/documents").json["documents"]
+        self.assertEqual([d["document_id"] for d in remaining], [second["document_id"]])
+        client = open_index(self.db)
+        try:
+            self.assertEqual(search_index(client, self.vector, document_id=first["document_id"]), [])
+        finally:
+            client.close()
+        self.assertEqual(self.upload(first_bytes).status_code, 201)
+
+    def test_upload_marker_survives_manual_file_and_folder_deletion(self):
+        paper = self.upload(self.pdf()).json["document"]
+        folder = self.uploads / paper["document_id"]
+        (folder / paper["source"]).unlink()
+        folder.rmdir()
+        client = create_app(self.db, self.model, self.uploads).test_client()
+        self.assertTrue(client.get("/documents").json["documents"][0]["can_delete"])
+        self.assertEqual(client.delete("/documents/" + paper["document_id"]).status_code, 200)
+        self.assertEqual(client.get("/documents").json["documents"], [])
+
+    def test_imported_paper_stays_protected_after_duplicate_web_upload(self):
+        content = self.pdf()
+        index = open_index(self.db)
+        try:
+            paper = index_pdf(index, self.model, self.root / "fixture.pdf")
+        finally:
+            index.close()
+        self.assertEqual(self.upload(content).json["status"], "already_indexed")
+        self.assertFalse(self.client.get("/documents").json["documents"][0]["can_delete"])
+        response = self.client.delete("/documents/" + paper["document_id"])
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(len(self.client.get("/documents").json["documents"]), 1)
+        self.assertTrue((self.root / "fixture.pdf").exists())
+
+    def test_older_upload_storage_folder_still_allows_deletion(self):
+        paper = self.upload(self.pdf()).json["document"]
+        index = open_index(self.db)
+        try:
+            index.set_payload(COLLECTION, payload={"origin": "imported"},
+                              points=document_filter(paper["document_id"]), wait=True)
+        finally:
+            index.close()
+        (self.uploads / paper["document_id"] / paper["source"]).unlink()
+        self.assertTrue(self.client.get("/documents").json["documents"][0]["can_delete"])
+        self.assertEqual(self.client.delete("/documents/" + paper["document_id"]).status_code, 200)
+
+    def test_delete_rejects_invalid_and_missing_ids(self):
+        paper = self.upload(self.pdf()).json["document"]
+        self.assertEqual(self.client.delete("/documents/not-a-hash").status_code, 400)
+        self.assertEqual(self.client.delete("/documents/" + "a" * 64).status_code, 404)
+        self.assertEqual(self.client.delete("/documents/" + paper["document_id"]).status_code, 200)
+        self.assertEqual(self.client.delete("/documents/" + paper["document_id"]).status_code, 404)
+
+    def test_file_delete_failure_keeps_index_and_releases_lock(self):
+        paper = self.upload(self.pdf()).json["document"]
+        with patch("api.uploads.Path.unlink", side_effect=PermissionError("simulated file permission error")):
+            with self.assertLogs(self.app.logger, level="WARNING"):
+                response = self.client.delete("/documents/" + paper["document_id"])
+        self.assertEqual(response.status_code, 503)
+        self.assertTrue((self.uploads / paper["document_id"] / paper["source"]).exists())
+        self.assertEqual(len(self.client.get("/documents").json["documents"]), 1)
+
+    def test_index_delete_failure_remains_retryable_after_file_removal(self):
+        paper = self.upload(self.pdf()).json["document"]
+        with patch("qdrant_client.QdrantClient.delete", side_effect=RuntimeError("simulated index error")):
+            with self.assertLogs(self.app.logger, level="WARNING"):
+                response = self.client.delete("/documents/" + paper["document_id"])
+        self.assertEqual(response.status_code, 503)
+        self.assertFalse((self.uploads / paper["document_id"] / paper["source"]).exists())
+        self.assertTrue(self.client.get("/documents").json["documents"][0]["can_delete"])
+        self.assertEqual(self.client.delete("/documents/" + paper["document_id"]).status_code, 200)
+
+    def test_delete_does_not_follow_symlinks_or_remove_other_files(self):
+        paper = self.upload(self.pdf()).json["document"]
+        original = self.uploads / paper["document_id"] / paper["source"]
+        sentinel = self.root / "keep.pdf"
+        sentinel.write_bytes(b"keep this")
+        original.unlink()
+        original.symlink_to(sentinel)
+        self.assertEqual(self.client.delete("/documents/" + paper["document_id"]).status_code, 409)
+        self.assertEqual(sentinel.read_bytes(), b"keep this")
+        original.unlink()
+        other = original.parent / "unrelated.txt"
+        other.write_text("keep too")
+        self.assertEqual(self.client.delete("/documents/" + paper["document_id"]).status_code, 200)
+        self.assertEqual(other.read_text(), "keep too")
 
 
 if __name__ == "__main__":

@@ -48,7 +48,37 @@ Caught indexing/storage failures remove any newly written points for this upload
 Temporary files are removed when the request finishes, including on errors. Other
 documents are preserved. This rollback handles ordinary exceptions; it is not a
 crash-safe transaction across Qdrant and the filesystem. Public multiuser hosting,
-background job recovery, document deletion, and OCR are future work.
+background job recovery, and OCR are future work.
+
+## Delete an uploaded paper
+
+Click **Delete** beside a web-uploaded PDF in the paper list and confirm its
+filename. The app removes its stored copy and indexed passages, refreshes the
+paper list/selector, and clears the displayed answer so old evidence is not left
+on screen. Canceling sends no delete request. The file you originally chose from
+another folder is not touched; only this app's stored copy is removed.
+
+The original imported research papers have no Delete button, and the API rejects
+their deletion. Re-uploading an identical imported paper does not change that
+protection. New web uploads have `origin: "web_upload"` in their Qdrant payloads,
+so they can still be removed if their stored PDF or storage folder was manually
+deleted. Older uploads without this marker are recognized by their surviving
+content-specific upload folder. If both that folder and the old provenance are
+missing, the app conservatively treats the document as imported.
+
+`GET /documents` reports `can_delete` for each document. The button sends
+`DELETE /documents/<document_id>` and the server independently checks provenance.
+Deletion uses the existing work lock and an exact document-ID filter. It validates
+the ID and stored path, refuses symbolic links, deletes the stored PDF if present,
+and then deletes the matching Qdrant points. An empty storage directory is removed;
+unrelated files are not touched. If file removal fails, indexed data remains. If
+index removal fails after the file is gone, the indexed record remains available
+for retry. This is not a crash-safe cross-storage transaction.
+
+Successful deletion returns HTTP 200 with `status: "deleted"`, `document_id`, and
+`source`. Invalid IDs return 400; protected documents 403; missing documents 404;
+unsafe stored paths 409; busy/storage failures 503. There is no undo button;
+re-uploading the original file indexes it again.
 
 ## API example
 

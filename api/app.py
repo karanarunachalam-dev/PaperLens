@@ -7,7 +7,7 @@ import time
 from flask import Flask, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
 
-from api.uploads import MAX_UPLOAD_BYTES, UploadError, index_upload
+from api.uploads import MAX_UPLOAD_BYTES, UploadError, can_delete_upload, delete_upload, index_upload
 from scripts.answer_question import retrieve
 from scripts.grounded_answer import generate_answer
 from scripts.local_index import list_documents, open_index
@@ -75,7 +75,8 @@ def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads"):
         try:
             client = open_index(db)
             try:
-                return jsonify(documents=list_documents(client))
+                records = list_documents(client)
+                return jsonify(documents=[{**d, "can_delete": can_delete_upload(d, upload_dir)} for d in records])
             finally:
                 client.close()
         except (OSError, RuntimeError) as exc:
@@ -109,6 +110,25 @@ def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads"):
         except (OSError, RuntimeError) as exc:
             app.logger.warning("Upload failed: %s", exc)
             return error("upload_failed", "Could not finish indexing the PDF. Check the API terminal, then retry.", 503)
+        finally:
+            work_lock.release()
+
+    @app.delete("/documents/<document_id>")
+    def delete_document(document_id):
+        problem = acquire_index()
+        if problem is not None:
+            return problem
+        try:
+            client = open_index(db)
+            try:
+                return jsonify(delete_upload(document_id, client, upload_dir))
+            finally:
+                client.close()
+        except UploadError as exc:
+            return error("delete_rejected", str(exc), exc.status)
+        except (OSError, RuntimeError) as exc:
+            app.logger.warning("Delete failed: %s", exc)
+            return error("delete_failed", "Could not finish deleting this PDF. Refresh the list and retry; check the API terminal if it persists.", 503)
         finally:
             work_lock.release()
 

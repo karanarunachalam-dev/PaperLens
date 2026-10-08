@@ -51,6 +51,11 @@ with `status: "indexed"`, document metadata, and elapsed time. Identical bytes
 already in the index return HTTP 200 with `status: "already_indexed"`. See
 `docs/pdf-upload.md` for limits, validation, storage, and a request example.
 
+`GET /documents` also returns `can_delete`. `DELETE /documents/<document_id>`
+removes a web-uploaded document's stored copy and Qdrant passages. Imported papers
+are protected by the server. The webpage asks for confirmation before calling
+this endpoint; see `docs/pdf-upload.md` for deletion errors and retry behavior.
+
 Read `api/app.py`:
 
 1. `create_app()` creates the Flask app and loads BGE once. It accepts a different

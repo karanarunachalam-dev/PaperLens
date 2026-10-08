@@ -2,6 +2,7 @@
 
 import hashlib
 from pathlib import Path
+import re
 from tempfile import TemporaryDirectory
 
 from qdrant_client import models
@@ -51,6 +52,9 @@ def index_upload(upload, client, model, upload_dir):
         destination = upload_dir / document_id / name
         try:
             record = index_pdf(client, model, staged, max_pages=MAX_UPLOAD_PAGES)
+            client.set_payload(COLLECTION, payload={"origin": "web_upload"},
+                               points=document_filter(document_id), wait=True)
+            record["origin"] = "web_upload"
             destination.parent.mkdir(exist_ok=True)
             staged.replace(destination)
         except Exception:
@@ -60,3 +64,41 @@ def index_upload(upload, client, model, upload_dir):
                 filter=document_filter(document_id)), wait=True)
             raise
         return {"status": "indexed", "document": record}
+
+
+def can_delete_upload(record, upload_dir):
+    """Only web uploads, including older uploads with a surviving storage folder."""
+    identity = record.get("document_id", "")
+    if not re.fullmatch(r"[0-9a-f]{64}", identity):
+        return False
+    folder = Path(upload_dir) / identity
+    return record.get("origin") == "web_upload" or (folder.is_dir() and not folder.is_symlink())
+
+
+def delete_upload(document_id, client, upload_dir):
+    """Remove only the chosen web upload; caller holds the shared work lock."""
+    if not re.fullmatch(r"[0-9a-f]{64}", document_id):
+        raise UploadError("Invalid document ID.", 400)
+    record = next((d for d in list_documents(client) if d["document_id"] == document_id), None)
+    if record is None:
+        raise UploadError("This document is no longer in the collection. Refresh the paper list.", 404)
+    if not can_delete_upload(record, upload_dir):
+        raise UploadError("Only PDFs added through the upload form can be deleted here.", 403)
+
+    folder = Path(upload_dir) / document_id
+    name = record["source"]
+    if not name or name in {".", ".."} or "/" in name or "\\" in name or folder.is_symlink():
+        raise UploadError("The stored file path is invalid. No document was deleted.", 409)
+    original = folder / name
+    if original.is_symlink():
+        raise UploadError("The stored PDF is a symbolic link. No document was deleted.", 409)
+    # Missing files are allowed: deletion must still remove stale indexed passages.
+    # Delete the file first; on an index failure the visible record remains retryable.
+    original.unlink(missing_ok=True)
+    client.delete(COLLECTION, points_selector=models.FilterSelector(
+        filter=document_filter(document_id)), wait=True)
+    try:
+        folder.rmdir()  # Only an empty directory; never remove unrelated files.
+    except OSError:
+        pass
+    return {"status": "deleted", "document_id": document_id, "source": name}

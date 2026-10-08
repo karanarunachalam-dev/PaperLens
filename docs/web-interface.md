@@ -62,6 +62,15 @@ limit. Upload waiting times out after ten minutes, and the request may still run
 on the server; refresh the paper list after it finishes. See `docs/pdf-upload.md`
 for the backend implementation and current format limitations.
 
+## Remove a web-uploaded paper
+
+Uploaded documents have a **Delete** button in the paper list. A browser dialog
+shows the filename and asks for confirmation. `deleteDocument()` sends a DELETE
+request only after confirmation, disables conflicting controls, and refreshes
+the list on success. It clears the old answer and evidence because the collection
+has changed. A failed delete leaves the list visible and displays an error for
+retry. Imported research papers are protected by both the API and the interface.
+
 ## Checks
 
 Flask's test client checks that the actual home template and static files serve

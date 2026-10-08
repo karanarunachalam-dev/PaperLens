@@ -87,7 +87,7 @@ class ApiTests(unittest.TestCase):
     @patch("api.app.open_index")
     def test_document_listing_closes_index(self, open_index, list_documents):
         response = self.client.get("/documents")
-        self.assertEqual(response.json, {"documents": [{"source": "paper.pdf"}]})
+        self.assertEqual(response.json, {"documents": [{"source": "paper.pdf", "can_delete": False}]})
         open_index.return_value.close.assert_called_once()
 
     @patch("api.app.retrieve")

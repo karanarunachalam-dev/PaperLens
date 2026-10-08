@@ -23,6 +23,12 @@ h3 { font-size: 14px; margin: 26px 0 12px; }
 .document-list { padding: 0; list-style: none; margin: 0 0 12px; }
 .document-list li { padding: 14px 0; border-top: 1px solid var(--line); font-size: 13px; overflow-wrap: anywhere; }
 .document-list li::before { content: 'PDF'; display: block; color: var(--green); font-size: 10px; font-weight: 750; letter-spacing: 1px; margin-bottom: 4px; }
+.document-name { display: block; }
+.delete-document { margin-top: 9px; border: 1px solid #d7b6ad; border-radius: 5px; padding: 4px 10px; background: transparent; color: #822d22; font-size: 12px; }
+.delete-document:hover:enabled { background: #fceee8; }
+#library-action-status { margin: 14px 0 0; color: var(--green); font-size: 12px; overflow-wrap: anywhere; }
+#library-action-status:empty { display: none; }
+#library-error { margin-top: 14px; font-size: 12px; }
 .library-note { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 20px; color: var(--muted); }
 main { min-width: 0; padding: 42px 48px 20px; }
 .intro { margin-bottom: 27px; }
