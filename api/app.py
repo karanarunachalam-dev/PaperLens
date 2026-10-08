@@ -4,7 +4,7 @@ from pathlib import Path
 from threading import Lock
 import time
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
 
 from scripts.answer_question import retrieve
@@ -39,11 +39,15 @@ def create_app(db=DEFAULT_DB, model=None):
 
     @app.before_request
     def restrict_browser_origin():
-        # A future UI will be served by this app. Do not accept cross-origin
+        # The UI is served by this app. Do not accept cross-origin
         # browser requests that could trigger expensive local generation.
         origin = request.headers.get("Origin")
         if origin and origin != request.host_url.rstrip("/"):
             return error("origin_not_allowed", "Use the API from its own address.", 403)
+
+    @app.get("/")
+    def home():
+        return render_template("index.html")
 
     @app.get("/health")
     def health():

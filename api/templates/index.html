@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Research Evidence Assistant</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Research Evidence Assistant home"><span class="brand-icon" aria-hidden="true">r.</span> Research Evidence Assistant</a>
+    <span class="local-label">On your computer</span>
+  </header>
+  <div class="workspace">
+    <aside class="library" aria-labelledby="library-title">
+      <p class="eyebrow">Your collection</p>
+      <h2 id="library-title">Research papers</h2>
+      <p class="muted">Ask across the collection or choose a single paper.</p>
+      <p id="library-status" role="status">Loading papers…</p>
+      <ul id="document-list" class="document-list"></ul>
+      <button id="reload-documents" class="text-button" type="button">Refresh papers</button>
+      <div class="library-note">Questions use the papers listed here. Choose a specific paper to keep your search focused.</div>
+    </aside>
+
+    <main>
+      <section class="intro">
+        <p class="eyebrow">Read with evidence</p>
+        <h1>Ask your papers.</h1>
+        <p>Explore a question, then read the passages behind the answer.</p>
+      </section>
+
+      <form id="question-form" class="question-card" aria-label="Ask the research papers">
+        <label for="document">Search in</label>
+        <select id="document" name="document" disabled><option value="">All research papers</option></select>
+        <label for="question">Your question</label>
+        <textarea id="question" name="question" rows="3" maxlength="2000" required
+          placeholder="How many layers are in the Transformer encoder?" aria-describedby="question-hint"></textarea>
+        <div class="form-footer">
+          <p id="question-hint">Answers run locally and can take a minute or two.</p>
+          <button id="ask-button" class="primary-button" type="submit" disabled>Ask question <span aria-hidden="true">↗</span></button>
+        </div>
+      </form>
+      <div class="example-row"><span>Try a question</span><button id="example-button" class="text-button" type="button">How many layers are in the Transformer encoder?</button></div>
+
+      <p id="request-status" class="request-status" role="status" aria-live="polite"></p>
+      <p id="request-error" class="error-message" role="alert" hidden></p>
+
+      <section id="answer-panel" class="answer-card" aria-labelledby="answer-title" aria-busy="false">
+        <div class="answer-heading"><h2 id="answer-title">Your answer</h2><span id="answer-time" class="muted"></span></div>
+        <p id="empty-message" class="empty-message">Start with a question. Your answer and its supporting passages will appear here.</p>
+        <div id="answer-content" hidden>
+          <p id="answered-question" class="answered-question"></p>
+          <p id="answer-text" class="answer-text"></p>
+          <section id="sources-section" aria-labelledby="sources-title" hidden>
+            <h3 id="sources-title">Sources used in the answer</h3>
+            <div id="citations"></div>
+          </section>
+          <details id="retrieved-details">
+            <summary id="retrieved-summary">Passages found</summary>
+            <p class="muted">These passages were sent to the model. Similarity measures relevance, not whether an answer is correct.</p>
+            <div id="retrieved-passages"></div>
+          </details>
+          <p class="evidence-note">Check the quoted evidence: a model can misinterpret a passage even when its citation is real.</p>
+        </div>
+      </section>
+      <footer class="page-footer">Research Evidence Assistant <span>Local models · Answers with sources</span></footer>
+    </main>
+  </div>
+</body>
+</html>

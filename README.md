@@ -159,11 +159,18 @@ Keep the local generator running, then start the Flask API in another terminal:
 .venv/bin/python -m api.app
 ```
 
-Open http://127.0.0.1:8000/documents to see the research papers. The API defaults
+Open http://127.0.0.1:8000/ for the question page: choose a paper or search across
+the collection, ask a question, and inspect its source quotes. The page shows
+elapsed waiting time, missing-evidence answers, and service errors separately.
+If the API was already running before the page was added, restart just the API
+to load the new route; keep the local generator running.
+
+Open http://127.0.0.1:8000/documents to see the research papers as JSON. The API defaults
 to `data/index/research-eval`; `POST /questions` accepts a JSON `question` and
 returns the answer, citations, and retrieved evidence. This first API component
-uses existing indexed papers. Upload and a frontend are still to come.
+uses existing indexed papers. PDF upload is still to come.
 See `docs/backend-api.md` for the request example, code explanation, and errors.
+See `docs/web-interface.md` for the page's HTML/CSS/JavaScript walkthrough.
 
 ## References
 

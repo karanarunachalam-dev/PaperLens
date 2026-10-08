@@ -1,7 +1,7 @@
 # First backend component: ask the research papers
 
 The command-line program already retrieves passages and generates an answer. The
-API lets another program, and later our webpage, use those same functions over
+API lets another program, including our webpage, use those same functions over
 HTTP. This component searches existing papers; PDF upload comes next.
 
 ## Start it
@@ -17,7 +17,8 @@ The API loads the embedding model once, then listens at http://127.0.0.1:8000.
 It uses `data/index/research-eval`, **not the demo PDFs**. This is Flask's local
 development server; deployment is a later component. No API keys are required.
 
-Open http://127.0.0.1:8000/documents in a browser to see the indexed paper names.
+Open http://127.0.0.1:8000/ for the question page, or
+http://127.0.0.1:8000/documents to see the indexed paper names as JSON.
 `GET /health` checks only that this API is running; it does not check the separate
 answer model. Stop the API with Ctrl+C in its own terminal.
 
@@ -53,15 +54,15 @@ Read `api/app.py`:
    `request.get_json()` reads the submitted question and options.
 3. `retrieve(...)` and `generate_answer(...)` are our existing pipeline. The API
    does not train either model or change retrieval thresholds.
-4. `jsonify(...)` sends structured results back to the caller. The future webpage
-   will display these fields instead of showing raw JSON.
+4. `jsonify(...)` sends structured results back to the caller. The webpage
+   displays these fields instead of showing raw JSON.
 
 The other code validates inputs, closes the index, and handles failures. A lock
 permits one operation at a time because this setup uses embedded Qdrant and one
 CPU generator slot. A second request gets a clear busy response. Do not run
 separate indexing/search commands concurrently with an API request; this lock
 coordinates API threads, not unrelated processes. Browsers must call the API
-from its own origin; the future UI will be served by this app.
+from its own origin; the UI is served by this app.
 
 ## Errors and limitations
 
