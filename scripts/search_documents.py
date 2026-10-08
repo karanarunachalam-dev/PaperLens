@@ -19,14 +19,15 @@ def load_model():
                                 cache_folder=str(root / ".cache/models"), local_files_only=True)
 
 
-def index_pdf(client, model, path):
-    pages = extract_pdf(path)
+def index_pdf(client, model, path, max_pages=None):
+    pages = extract_pdf(path, max_pages=max_pages)
     chunks = chunk_pages(pages, model.tokenizer, INDEX_CONFIG["strategy"],
                          INDEX_CONFIG["size"], INDEX_CONFIG["overlap"], model.max_seq_length)
     vectors = model.encode([c.text for c in chunks], convert_to_numpy=True, show_progress_bar=False)
     count = upsert_document(client, chunks, vectors)
     return {"document_id": pages[0].document_id, "source": pages[0].source,
-            "chunks": count, "empty_pages": [p.page for p in pages if not p.text]}
+            "chunks": count, "pages": len(pages),
+            "empty_pages": [p.page for p in pages if not p.text]}
 
 
 def main():

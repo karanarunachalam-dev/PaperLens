@@ -160,7 +160,7 @@ Keep the local generator running, then start the Flask API in another terminal:
 ```
 
 Open http://127.0.0.1:8000/ for the question page: choose a paper or search across
-the collection, ask a question, and inspect its source quotes. The page shows
+the collection, upload a PDF, ask a question, and inspect its source quotes. The page shows
 elapsed waiting time, missing-evidence answers, and service errors separately.
 If the API was already running before the page was added, restart just the API
 to load the new route; keep the local generator running.
@@ -168,7 +168,17 @@ to load the new route; keep the local generator running.
 Open http://127.0.0.1:8000/documents to see the research papers as JSON. The API defaults
 to `data/index/research-eval`; `POST /questions` accepts a JSON `question` and
 returns the answer, citations, and retrieved evidence. This first API component
-uses existing indexed papers. PDF upload is still to come.
+supports indexed papers and one PDF upload at a time. Use **Choose File → Add PDF**
+for a text-based PDF up to 10 MiB and 100 pages. Successful uploads are selected
+automatically; identical file contents reuse the existing document. Original
+uploads stay locally in `data/raw/uploads/`, excluded from Git. Scanned/image-only
+and encrypted PDFs are not supported. See `docs/pdf-upload.md` for details.
+
+Uploads join the application's existing index. To reproduce the fixed three-paper
+evaluation after adding documents, use a separate index, for example
+`scripts.evaluate_research --prepare --db data/index/evaluation-only` together with
+the evaluator's required `--output` option. The evaluator rejects extra documents;
+historical results describe the original three-paper corpus.
 See `docs/backend-api.md` for the request example, code explanation, and errors.
 See `docs/web-interface.md` for the page's HTML/CSS/JavaScript walkthrough.
 

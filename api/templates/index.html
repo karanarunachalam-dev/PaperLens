@@ -30,6 +30,17 @@
         <p>Explore a question, then read the passages behind the answer.</p>
       </section>
 
+      <form id="upload-form" class="upload-card" aria-label="Upload a PDF">
+        <div>
+          <label for="pdf-file">Add your own PDF</label>
+          <p id="upload-hint">One text-based PDF at a time · Up to 10 MB and 100 pages</p>
+          <input id="pdf-file" name="file" type="file" accept=".pdf,application/pdf" required aria-describedby="upload-hint">
+        </div>
+        <button id="upload-button" class="primary-button" type="submit">Add PDF</button>
+        <p id="upload-status" role="status" aria-live="polite"></p>
+        <p id="upload-error" class="error-message" role="alert" hidden></p>
+      </form>
+
       <form id="question-form" class="question-card" aria-label="Ask the research papers">
         <label for="document">Search in</label>
         <select id="document" name="document" disabled><option value="">All research papers</option></select>

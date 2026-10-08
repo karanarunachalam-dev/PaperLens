@@ -44,7 +44,23 @@ may still be running on the server, so the message advises waiting before retry.
 Answer text, filenames, quotes, and passages are inserted using `textContent`,
 not interpreted as HTML. This also means Markdown in model output stays plain
 text. Source cards currently show names and page numbers, not PDF download links.
-PDF upload, conversation history, and streaming are not implemented here.
+Conversation history and streaming are not implemented here.
+
+## Upload your own PDF
+
+Choose a file in **Add your own PDF**, then click **Add PDF**. The browser sends a
+`FormData` request to `POST /documents`; it sets the multipart boundary itself.
+The upload and question controls are disabled until indexing finishes. An elapsed
+timer shows that the request is still pending without inventing a completion
+percentage. On success the page refreshes its paper list and selects the returned
+document ID. A renamed duplicate selects the original document without adding a
+copy. Blank-page warnings are displayed after a successful partial-text import.
+
+The browser checks extension, empty files, and the 10 MiB size limit for quick
+feedback. The server independently validates the upload and enforces the 100-page
+limit. Upload waiting times out after ten minutes, and the request may still run
+on the server; refresh the paper list after it finishes. See `docs/pdf-upload.md`
+for the backend implementation and current format limitations.
 
 ## Checks
 

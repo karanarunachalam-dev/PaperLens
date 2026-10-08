@@ -2,7 +2,7 @@
 
 The command-line program already retrieves passages and generates an answer. The
 API lets another program, including our webpage, use those same functions over
-HTTP. This component searches existing papers; PDF upload comes next.
+HTTP. The API searches indexed papers and now also accepts PDF uploads.
 
 ## Start it
 
@@ -46,6 +46,11 @@ model call is an error, not evidence that the documents lack the answer.
 
 ## Four pieces of code to understand
 
+For uploads, `POST /documents` accepts one multipart `file` and returns HTTP 201
+with `status: "indexed"`, document metadata, and elapsed time. Identical bytes
+already in the index return HTTP 200 with `status: "already_indexed"`. See
+`docs/pdf-upload.md` for limits, validation, storage, and a request example.
+
 Read `api/app.py`:
 
 1. `create_app()` creates the Flask app and loads BGE once. It accepts a different
@@ -66,7 +71,8 @@ from its own origin; the UI is served by this app.
 
 ## Errors and limitations
 
-- HTTP 400: invalid question or options; 413: oversized request; 415: not JSON.
+- HTTP 400: invalid fields/options; 413: oversized request; 415: incorrect content type.
+- HTTP 422: invalid, unreadable, encrypted, or over-page-limit PDF.
 - HTTP 502: generated output failed our checks or exceeded the context budget.
 - HTTP 503: busy, unavailable index, or unavailable/timed-out answer model.
 - Errors use `{"error":{"code":"...","message":"..."}}`.
@@ -74,7 +80,7 @@ from its own origin; the UI is served by this app.
 The API preserves the pipeline's limitations: quotations can be real while the
 answer interprets them incorrectly, and comparisons can be incomplete. Adding
 an HTTP interface does not improve model accuracy. A request blocks until the
-model finishes; streaming, upload, authentication, and public hosting are not
+model finishes; streaming, authentication, and public hosting are not
 part of this component.
 
 Run checks with `.venv/bin/python -m unittest discover -s tests`. API tests use

@@ -7,6 +7,7 @@ import time
 from flask import Flask, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
 
+from api.uploads import MAX_UPLOAD_BYTES, UploadError, index_upload
 from scripts.answer_question import retrieve
 from scripts.grounded_answer import generate_answer
 from scripts.local_index import list_documents, open_index
@@ -16,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DB = ROOT / "data/index/research-eval"
 
 
-def create_app(db=DEFAULT_DB, model=None):
+def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads"):
     app = Flask(__name__)
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024
     db = Path(db)
@@ -30,6 +31,8 @@ def create_app(db=DEFAULT_DB, model=None):
 
     @app.errorhandler(HTTPException)
     def http_error(exc):
+        if exc.code == 413 and request.endpoint == "upload_document":
+            return error("upload_too_large", "Upload one PDF up to 10 MB.", 413)
         return error(exc.name.lower().replace(" ", "_"), exc.description, exc.code)
 
     @app.errorhandler(Exception)
@@ -39,6 +42,9 @@ def create_app(db=DEFAULT_DB, model=None):
 
     @app.before_request
     def restrict_browser_origin():
+        if request.endpoint == "upload_document":
+            # Allow multipart overhead; the file itself is separately limited to 10 MiB.
+            request.max_content_length = MAX_UPLOAD_BYTES + 64 * 1024
         # The UI is served by this app. Do not accept cross-origin
         # browser requests that could trigger expensive local generation.
         origin = request.headers.get("Origin")
@@ -54,8 +60,8 @@ def create_app(db=DEFAULT_DB, model=None):
         # API liveness only: this does not probe the separate generator server.
         return jsonify(status="ok", component="api")
 
-    def acquire_index():
-        if not db.is_dir():
+    def acquire_index(allow_create=False):
+        if not allow_create and not db.is_dir():
             return error("index_unavailable", "The research index is missing. Index the papers first.", 503)
         if not work_lock.acquire(blocking=False):
             return error("busy", "Another request is running. Please try again shortly.", 503)
@@ -75,6 +81,34 @@ def create_app(db=DEFAULT_DB, model=None):
         except (OSError, RuntimeError) as exc:
             app.logger.warning("Index unavailable: %s", exc)
             return error("index_unavailable", "Cannot open the index. Close other indexing or search processes.", 503)
+        finally:
+            work_lock.release()
+
+    @app.post("/documents")
+    def upload_document():
+        if request.mimetype != "multipart/form-data":
+            return error("invalid_upload", "Send one PDF in the multipart file field.", 415)
+        problem = acquire_index(allow_create=True)
+        if problem is not None:
+            return problem
+        started = time.perf_counter()
+        try:
+            if set(request.files) != {"file"} or len(request.files.getlist("file")) != 1 or request.form:
+                return error("invalid_upload", "Choose exactly one PDF to upload.", 400)
+            client = open_index(db)
+            try:
+                result = index_upload(request.files["file"], client, model, upload_dir)
+            finally:
+                client.close()
+            result["total_seconds"] = round(time.perf_counter() - started, 3)
+            return jsonify(result), 201 if result["status"] == "indexed" else 200
+        except UploadError as exc:
+            return error("invalid_upload", str(exc), exc.status)
+        except ValueError as exc:
+            return error("invalid_pdf", str(exc), 422)
+        except (OSError, RuntimeError) as exc:
+            app.logger.warning("Upload failed: %s", exc)
+            return error("upload_failed", "Could not finish indexing the PDF. Check the API terminal, then retry.", 503)
         finally:
             work_lock.release()
 

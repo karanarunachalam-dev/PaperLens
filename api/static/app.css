@@ -27,6 +27,14 @@ h3 { font-size: 14px; margin: 26px 0 12px; }
 main { min-width: 0; padding: 42px 48px 20px; }
 .intro { margin-bottom: 27px; }
 .question-card, .answer-card { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 24px; box-shadow: 0 4px 18px #243b2f04; }
+.upload-card { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 20px 24px; margin-bottom: 20px; border: 1px dashed #9aafa0; border-radius: 14px; background: #edf2e9; }
+.upload-card > div { flex: 1; min-width: 0; }
+.upload-card label { font-size: 14px; }
+#upload-hint { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+#pdf-file { width: 100%; font: inherit; font-size: 12px; color: var(--ink); }
+#pdf-file::file-selector-button { border: 1px solid #b7c6b8; border-radius: 5px; padding: 6px 9px; margin-right: 9px; background: var(--paper); color: var(--ink); cursor: pointer; }
+#upload-status, #upload-error { flex-basis: 100%; margin: 0; font-size: 13px; overflow-wrap: anywhere; }
+#upload-status:empty { display: none; }
 label { display: block; font-size: 12px; font-weight: 650; margin-bottom: 7px; }
 select { max-width: 100%; width: 100%; padding: 9px 12px; color: var(--ink); background: #f6f7f2; border: 1px solid var(--line); border-radius: 7px; margin-bottom: 20px; }
 textarea { display: block; resize: vertical; min-height: 100px; width: 100%; padding: 12px; border: 1px solid #cdd5ca; background: white; border-radius: 7px; color: var(--ink); }

@@ -6,6 +6,8 @@ const question = byId("question");
 const documentSelect = byId("document");
 let papersReady = false;
 let busy = false;
+let uploading = false;
+let loadingDocuments = false;
 
 // Model output and PDF text are untrusted text, never HTML.
 function textElement(tag, text, className) {
@@ -20,9 +22,13 @@ function updateControls() {
   documentSelect.disabled = busy || !papersReady;
   question.disabled = busy;
   byId("example-button").disabled = busy;
-  byId("reload-documents").disabled = busy;
-  byId("ask-button").textContent = busy ? "Working…" : "Ask question ↗";
-  byId("answer-panel").setAttribute("aria-busy", String(busy));
+  byId("reload-documents").disabled = busy || loadingDocuments;
+  byId("ask-button").textContent = busy && !uploading ? "Working…" : "Ask question ↗";
+  byId("answer-panel").setAttribute("aria-busy", String(busy && !uploading));
+  byId("pdf-file").disabled = busy || loadingDocuments;
+  byId("upload-button").disabled = busy || loadingDocuments;
+  byId("upload-button").textContent = uploading ? "Adding…" : "Add PDF";
+  byId("upload-form").setAttribute("aria-busy", String(uploading));
 }
 
 async function fetchJSON(url, options = {}, timeoutMs = 15000) {
@@ -46,12 +52,12 @@ async function fetchJSON(url, options = {}, timeoutMs = 15000) {
   }
 }
 
-async function loadDocuments() {
+async function loadDocuments(selectedId = documentSelect.value) {
   papersReady = false;
+  loadingDocuments = true;
   updateControls();
   byId("reload-documents").disabled = true;
   byId("library-status").textContent = "Loading papers…";
-  const previousSelection = documentSelect.value;
   documentSelect.replaceChildren(new Option("All research papers", ""));
   byId("document-list").replaceChildren();
   try {
@@ -61,13 +67,16 @@ async function loadDocuments() {
       documentSelect.add(new Option(paper.source, paper.document_id));
     }
     papersReady = data.documents.length > 0;
-    if (data.documents.some((paper) => paper.document_id === previousSelection)) documentSelect.value = previousSelection;
+    if (data.documents.some((paper) => paper.document_id === selectedId)) documentSelect.value = selectedId;
     byId("library-status").textContent = papersReady
       ? `${data.documents.length} ${data.documents.length === 1 ? "paper" : "papers"} available`
-      : "No papers are indexed yet. Add papers to the research collection, then refresh.";
+      : "No papers are indexed yet. Upload a PDF to start.";
+    return true;
   } catch (error) {
     byId("library-status").textContent = error.message;
+    return false;
   } finally {
+    loadingDocuments = false;
     updateControls();
   }
 }
@@ -144,11 +153,63 @@ form.addEventListener("submit", async (event) => {
 });
 
 question.addEventListener("input", () => question.setCustomValidity(""));
-byId("reload-documents").addEventListener("click", loadDocuments);
+byId("reload-documents").addEventListener("click", () => loadDocuments());
 byId("example-button").addEventListener("click", () => {
   question.value = "How many layers are in the Transformer encoder?";
   question.setCustomValidity("");
   documentSelect.value = "";
   question.focus();
+});
+byId("pdf-file").addEventListener("change", () => {
+  byId("upload-error").hidden = true;
+  byId("upload-status").textContent = "";
+});
+byId("upload-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (busy || loadingDocuments) return;
+  const file = byId("pdf-file").files[0];
+  byId("upload-error").hidden = true;
+  byId("upload-status").textContent = "";
+  if (!file || !file.name.toLowerCase().endsWith(".pdf") || file.size > 10 * 1024 * 1024 || file.size === 0) {
+    byId("upload-error").textContent = "Choose a nonempty PDF up to 10 MB.";
+    byId("upload-error").hidden = false;
+    return;
+  }
+  const data = new FormData();
+  data.append("file", file);
+  busy = true;
+  uploading = true;
+  updateControls();
+  const started = Date.now();
+  const updateElapsed = () => {
+    byId("upload-status").textContent = `Uploading and preparing your PDF · ${Math.floor((Date.now() - started) / 1000)}s elapsed. Keep this page open.`;
+  };
+  updateElapsed();
+  const timer = setInterval(updateElapsed, 1000);
+  try {
+    // The browser sets the multipart boundary. Do not set Content-Type manually.
+    const result = await fetchJSON("/documents", { method: "POST", body: data }, 600000);
+    clearInterval(timer);
+    const paper = result.document;
+    const refreshed = await loadDocuments(paper.document_id);
+    let message = result.status === "already_indexed"
+      ? `${paper.source} is already in your collection. No duplicate was added.`
+      : `${paper.source} is ready (${Number(result.total_seconds).toFixed(1)}s).`;
+    if (paper.empty_pages?.length) {
+      message += ` No readable text on physical pages ${paper.empty_pages.join(", ")}; answers cannot use those pages.`;
+    }
+    message += refreshed ? " The paper is selected below—ask a question." : " Refresh papers to select it.";
+    byId("upload-status").textContent = message;
+    byId("pdf-file").value = "";
+  } catch (error) {
+    byId("upload-status").textContent = "";
+    byId("upload-error").textContent = error.message;
+    byId("upload-error").hidden = false;
+  } finally {
+    clearInterval(timer);
+    uploading = false;
+    busy = false;
+    updateControls();
+  }
 });
 loadDocuments();

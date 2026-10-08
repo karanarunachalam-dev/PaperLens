@@ -19,7 +19,7 @@ class PageText:
     text: str
 
 
-def extract_pdf(path: Path) -> list[PageText]:
+def extract_pdf(path: Path, max_pages: int | None = None) -> list[PageText]:
     """Return all pages, including empty pages, with physical PDF page numbers."""
     path = Path(path)
     if path.suffix.lower() != ".pdf":
@@ -33,6 +33,8 @@ def extract_pdf(path: Path) -> list[PageText]:
             reader = PdfReader(source)
             if reader.is_encrypted:
                 raise ValueError("Encrypted PDFs are not supported by this first version.")
+            if max_pages is not None and len(reader.pages) > max_pages:
+                raise ValueError(f"This PDF exceeds the {max_pages}-page upload limit.")
 
             pages = []
             for number, page in enumerate(reader.pages, start=1):
