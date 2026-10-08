@@ -140,6 +140,8 @@ def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads"):
                 result = generate_answer(question.strip(), matches)
             except ValueError as exc:
                 app.logger.warning("Answer rejected: %s", exc)
+                if str(exc).startswith("Model quote does not occur in "):
+                    return error("generation_failed", "The model's evidence quote did not match the document text, so the answer was not displayed. Try asking for one specific fact.", 502)
                 return error("generation_failed", "The model could not produce an answer that passed our checks. Try a narrower question.", 502)
             except RuntimeError as exc:
                 app.logger.warning("Generator unavailable: %s", exc)

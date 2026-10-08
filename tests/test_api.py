@@ -64,6 +64,15 @@ class ApiTests(unittest.TestCase):
             self.assertNotIn("answer", response.json)
         self.assertEqual(retrieve.call_count, 2)
 
+    @patch("api.app.generate_answer", side_effect=GenerationError("Model quote does not occur in S1.", {}))
+    @patch("api.app.retrieve", return_value=[])
+    def test_quote_rejection_explains_failure_without_showing_an_answer(self, retrieve, generate):
+        with self.assertLogs(self.app.logger, level="WARNING"):
+            response = self.client.post("/questions", json={"question": "Who is this person?"})
+        self.assertEqual(response.status_code, 502)
+        self.assertIn("evidence quote did not match", response.json["error"]["message"])
+        self.assertNotIn("answer", response.json)
+
     @patch("api.app.retrieve")
     def test_busy_request_returns_immediately(self, retrieve):
         def during_retrieval(*args):

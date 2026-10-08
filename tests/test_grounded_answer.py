@@ -71,6 +71,12 @@ class GroundedAnswerTests(unittest.TestCase):
                     {"text": "claim", "source_id": "S1", "quote": quote}]}
                 validate_answer(raw, {"S1": {**self.hit, "text": source}})
 
+    def test_quote_cannot_join_separated_paper_sections(self):
+        source = "Study Alpha\nMETHODS\nA controlled experiment.\nTRAINING\nBatch size: 16."
+        self.assertIsNone(find_quote_span("Study Alpha Batch size: 16.", source))
+        excerpt = "Batch size: 16."
+        self.assertEqual(find_quote_span(excerpt, source), excerpt)
+
     def test_rejects_changed_numeric_claim_even_when_quote_is_real(self):
         self.raw["statements"][0]["text"] = "The batch size was 32."
         with self.assertRaisesRegex(ValueError, "numeric claim"):

@@ -186,3 +186,10 @@ The initial generation walkthrough is in `docs/local-generation.md`. The subsequ
 - Desktop and 390-pixel mobile screenshots were inspected; no horizontal overflow. Temporary test server/index were removed after verification. The user's running servers and real document collection were left intact.
 - Uploads join the application's existing research index. Fixed-corpus evaluation must use a separate clean `--db`; the evaluator already rejects extra documents. Historical benchmark results still describe the original three papers, not arbitrary uploaded PDFs.
 - Usage and implementation walkthrough: `docs/pdf-upload.md`. Restart only the API to enable the new route, refresh the page, and try a text-based paper whose answers can be checked manually. No model training is involved.
+
+### Scope clarification and quote-error feedback
+
+- An uploaded-resume experiment exposed a model quote that joined noncontiguous sections. The quote validator correctly rejected it. Temporary prompt experiments were reverted after the learner clarified that we should focus on research-paper use; the research prompt and validation behavior remain unchanged.
+- Retained a clearer API error explaining that the evidence quote did not match the document text. It still returns HTTP 502 and withholds the rejected answer. Added checks for this API response and rejection of excerpts stitched across separate paper sections.
+- All 52 automated tests passed after restoring the original research prompt.
+- The resume remains stored; selecting a research paper excludes it from that question. No uploaded documents were deleted, no model weights changed, and no claim is made that this error-message improvement fixes generation accuracy.
