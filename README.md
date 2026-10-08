@@ -4,7 +4,7 @@ A learning-first document question-answering project with inspectable source evi
 
 ## Status
 
-Day 1 started on October 5, 2026. Implemented components: standalone semantic search, page-aware PDF extraction, two token-bounded chunking strategies, and persistent Qdrant document retrieval. Answer generation is not implemented yet.
+Day 1 started on October 5, 2026. Implemented components: standalone semantic search, page-aware PDF extraction, two token-bounded chunking strategies, persistent Qdrant document retrieval, and local answer generation with source references. The CLI pipeline works on synthetic PDFs; evaluation on real research papers and the API/UI are still outstanding.
 
 ## Day 1 objective
 
@@ -63,7 +63,7 @@ Model loading, cache paths, and command-line parsing are supporting library/setu
 
 ## Limitations
 
-Similarity scores are not probabilities. This example always returns top-k and does not decide answerability. The tiny synthetic collection does not establish real-world retrieval quality. Later modules will connect PDF extraction to chunking, evaluation, and grounded generation.
+Similarity scores are not probabilities. The standalone semantic-search example always returns top-k and does not decide answerability. The tiny synthetic collection does not establish real-world retrieval quality. The modules below connect extraction, chunking, retrieval, and generation.
 
 ## PDF extraction: first Day 2 component
 
@@ -112,6 +112,30 @@ The local client's dense-vector path performs exact scoring. This stage demonstr
 
 Storage-level tests use controlled vectors to check persistence, cosine scores, filters, duplicate imports, stale-chunk cleanup, and invalid-vector rejection. The actual embedding integration uses two synthetic PDFs. Details and observed results are recorded in `reports/day2-persistence.json` and `reports/day2-persistence.md`; real research-paper evaluation is still outstanding.
 
+## Local answers with citations
+
+The generator is Qwen3.5-2B, using Unsloth's Q4_K_M GGUF and llama.cpp build b11429 on CPU. Its download is about 1.28 GB, with additional runtime memory needed. Setup pins and verifies both artifacts; it is currently specific to Linux x86-64. No paid model API or GPU is required.
+
+One-time setup, then start the model in its own terminal:
+
+```bash
+.venv/bin/python -m scripts.setup_local_generator
+.venv/bin/python -m scripts.start_local_model
+```
+
+In a second terminal, after ingesting the two sample PDFs as shown above:
+
+```bash
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.answer_question "What training batch size does each document report?"
+HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.answer_question "What was the lead researcher's salary?"
+```
+
+Use `--document-id` to select one PDF and `--json` to inspect retrieved evidence, raw output, and timings. Stop the server with Ctrl+C when finished. The first download needs the internet; these inference commands use cached local models and localhost.
+
+The application supplies retrieved text to the generator, checks its context budget with the generator's tokenizer, and validates source IDs and quoted evidence. Original filenames and physical PDF page numbers come from stored metadata. Missing evidence produces an explicit abstention; invalid citations, output truncation, and server failures produce errors. These checks cannot establish semantic faithfulness or guarantee protection against document prompt injection.
+
+Read `docs/local-generation.md` for the short concept/code walkthrough and `reports/day3-local-generation.md` for measured results, including the initial incorrect refusals and the prompt correction. The six synthetic development cases are reproducible with `.venv/bin/python -m scripts.benchmark_local_generator` while the server is running and the index contains the two sample PDFs. The command overwrites the final JSON report; the separately saved initial report remains intact.
+
 ## References
 
 - [BGE model card: retrieval instructions and model details](https://huggingface.co/BAAI/bge-small-en-v1.5)
@@ -119,6 +143,9 @@ Storage-level tests use controlled vectors to check persistence, cosine scores, 
 - [pypdf: extraction behavior and limitations](https://pypdf.readthedocs.io/en/stable/user/extract-text.html)
 - [Qdrant Python client: local persistent mode](https://github.com/qdrant/qdrant-client)
 - [Qdrant metadata filtering](https://qdrant.tech/documentation/search/filtering/)
+- [Qwen3.5-2B model card](https://huggingface.co/Qwen/Qwen3.5-2B)
+- [Unsloth quantized model files](https://huggingface.co/unsloth/Qwen3.5-2B-GGUF/tree/f6d5376be1edb4d416d56da11e5397a961aca8ae)
+- [Pinned llama.cpp server documentation](https://github.com/ggml-org/llama.cpp/blob/b11429/tools/server/README.md)
 
 ## Results
 

@@ -117,6 +117,22 @@ Status: implemented and tested; walkthrough follows.
 
 The learner explicitly selected a small local generative model with no API charges, accepting slower responses. This replaces the roadmap's provisional hosted-API choice. Do not set up paid API generation by default.
 
+## October 8, 2026 — Day 3, first component
+
+### Module 7: Local answer generation and citations
+
+Status: implemented and checked on synthetic PDFs; learner walkthrough and applied checkpoint follow.
+
+- Selected Qwen3.5-2B with Unsloth Q4_K_M GGUF and llama.cpp b11429, using CPU inference and no paid model API.
+- Downloaded and verified pinned runtime/model checksums. Configured one request, four CPU threads, 4,096 context tokens, and 384 output tokens.
+- Added text-context assembly, generation, source-ID and evidence-quote checks, original-page citation mapping, explicit abstention, context budgeting, and error handling.
+- BGE still creates retrieval vectors; Qwen receives retrieved text. Qdrant stores and searches the BGE vectors. No model weights change.
+- The first prompt caused all three answerable questions to be refused despite successful retrieval. Plain text worked, and removing the JSON constraint alone did not fix the original prompt. A clearer prompt illustrating both answer and abstention formats fixed the observed cases.
+- The final development run answered three supported questions correctly, abstained on two unsupported questions, and skipped generation for an empty retrieval. Exact outputs, quotes, and timings are saved; initial failures remain in a separate JSON report.
+- CPU generation requests took 11.431–20.834 seconds, including prompt processing and decoding but excluding model startup. These are single-run observations on tiny synthetic inputs, not general performance or accuracy claims.
+- Quote provenance checks cannot prove claim entailment. Real-paper evaluation remains necessary.
+- All 21 unit tests and the dependency consistency check passed. A separate CLI smoke check displayed the batch-size answer, page-1 citation, and matching evidence quote.
+
 ### Next step
 
-Select and benchmark a local generator, then add grounded answer generation and citation mapping. Real research-paper extraction/retrieval evaluation remains outstanding. Reusable functions can move from the small teaching scripts into `src/` when application components are integrated.
+Explain the generation module using `docs/local-generation.md`, then evaluate the complete pipeline on a small real research-paper collection with reference questions. Reusable functions can move from teaching scripts into `src/` when application components are integrated.

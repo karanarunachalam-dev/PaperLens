@@ -1,0 +1,13 @@
+{
+  "model_repository": "unsloth/Qwen3.5-2B-GGUF",
+  "model_revision": "f6d5376be1edb4d416d56da11e5397a961aca8ae",
+  "model_file": "Qwen3.5-2B-Q4_K_M.gguf",
+  "model_sha256": "aaf42c8b7c3cab2bf3d69c355048d4a0ee9973d48f16c731c0520ee914699223",
+  "runtime_release": "b11429",
+  "runtime_url": "https://github.com/ggml-org/llama.cpp/releases/download/b11429/llama-b11429-bin-ubuntu-x64.tar.gz",
+  "runtime_sha256": "f6d25dde8f51133143d1453da4fd5f73b145127177612a283bf7995957af3392",
+  "context_size": 4096,
+  "threads": 4,
+  "port": 8081,
+  "max_output_tokens": 384
+}
