@@ -33,10 +33,23 @@ curl --max-time 240 http://127.0.0.1:8000/questions \
 ```
 
 `POST /questions` accepts a JSON object with `question`, optional `top_k` (default
-3, integer 1–10), and optional `document_id` from the documents response. Unknown
-fields are rejected. An unknown document ID retrieves nothing and produces an
-insufficient-evidence response. The embedding tokenizer also limits question
-length, and the request body is capped at 16 KiB.
+3, integer 1–10), and optional `document_ids`, a nonempty array of document ID
+strings from the documents response. For example:
+
+```json
+{"question":"What training settings do these papers report?","document_ids":["first-document-id","second-document-id"]}
+```
+
+Replace the example IDs with real IDs from `GET /documents`. Retrieval filters
+to their union before ranking. The top-k budget is shared across the selected
+papers; it does not guarantee a passage or citation from every paper.
+
+Omit the selection field to search all papers. The original `document_id` string
+is still supported for a single paper, but sending both fields is rejected.
+Empty arrays and invalid entries are rejected; duplicate IDs are deduplicated.
+Unknown IDs match nothing, without broadening the selection. If none match, the
+response reports insufficient evidence. Unknown fields are rejected. The embedding
+tokenizer also limits question length, and the request body is capped at 16 KiB.
 
 `top_k` counts the initial ranked matches. Generation first uses those matches
 in their original ranking with the existing prompt. A valid answer returns

@@ -10,7 +10,7 @@ Open the homepage and say:
 
 > This assistant helps me find answers in research PDFs and inspect the evidence. It retrieves passages, asks a local language model to explain them, and links citations to PDF pages. Uploading a paper does not train the model.
 
-Point out the paper selector and upload control. Qwen generates answers; BGE produces embeddings for retrieval.
+Point out the paper checkboxes and upload control. Choose one or several papers, or select **All research papers**. Qwen generates answers; BGE produces embeddings for retrieval.
 
 ## 2. Show a supported answer — 1 minute plus generation
 
@@ -54,6 +54,6 @@ Show the [evaluation summary](../reports/final-evaluation.md): software tests, h
 
 ## Portfolio description
 
-> Built a local research-PDF question-answering application using BGE embeddings, Qdrant, Qwen through llama.cpp, and Flask. Implemented page-preserving extraction, upload/deletion, validated evidence quotes, PDF citation links, and bounded recovery with adjacent context. Evaluated retrieval and documented answer-quality failures separately from 81 automated software tests.
+> Built a local research-PDF question-answering application using BGE embeddings, Qdrant, Qwen through llama.cpp, and Flask. Implemented page-preserving extraction, upload/deletion, multi-paper selection, validated evidence quotes, PDF citation links, and bounded recovery with adjacent context. Evaluated retrieval and documented answer-quality failures separately from 87 automated software tests.
 
 Be ready to explain why retrieval is not training, why a real quote can support a bad answer, why the original three-passage path is preserved, and why recovery stops after one retry.

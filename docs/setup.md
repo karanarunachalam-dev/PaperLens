@@ -99,7 +99,7 @@ Repeat only the two service commands in step 5. Models and indexed documents per
 
 ## Upload and delete
 
-Choose a text-based PDF and select **Add PDF**. The limit is 10 MiB and 100 pages. Identical file bytes reuse the indexed document. A successful upload is selected automatically for questions.
+Choose a text-based PDF and select **Add PDF**. Upload one file at a time; the limit is 10 MiB and 100 pages. Identical file bytes reuse the indexed document. A successful upload is selected automatically for questions. Under **Search in**, tick additional papers to search several together, or choose **All research papers**.
 
 Use **Delete** beside a web upload to remove its app-managed copy and indexed passages. Confirm the filename. The original file selected outside app storage is unaffected. Imported reference papers are protected. Removing a file manually does not remove its indexed text.
 
@@ -112,7 +112,7 @@ HF_HUB_OFFLINE=1 .venv/bin/python -m unittest discover -s tests -v
 .venv/bin/python -m pip check
 ```
 
-The recorded suite contains 81 tests. It uses temporary indexes, fixtures, cached tokenization, and controlled model responses. It does not need the generator or establish LLM accuracy. The [evaluation summary](../reports/final-evaluation.md) describes the separate live checks.
+The recorded suite contains 87 tests. It uses temporary indexes, fixtures, cached tokenization, and controlled model responses. It does not need the generator or establish LLM accuracy. The [evaluation summary](../reports/final-evaluation.md) describes the separate live checks.
 
 To evaluate retrieval on a collection isolated from uploads:
 

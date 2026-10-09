@@ -10,7 +10,7 @@ Ask questions about research PDFs and inspect the evidence behind each answer. A
 
 ## What you can do
 
-- Upload a research PDF and ask questions about one paper or the collection.
+- Upload a research PDF and ask questions about one paper, several selected papers, or the whole collection.
 - Read answers alongside evidence quotes, filenames, and physical page numbers.
 - Click a citation to open the original PDF at its cited page.
 - Inspect the passages sent to the model, including any neighboring context.
@@ -56,7 +56,7 @@ flowchart TD
     W --> O[Validated answer, abstention, or error]
 ```
 
-- **Retrieve:** embed the question with BGE and rank eligible chunks by cosine similarity. Selecting a paper filters the search by document ID.
+- **Retrieve:** embed the question with BGE and rank eligible chunks by cosine similarity. Paper checkboxes filter the search to the selected document IDs before ranking. The default three matches are shared across that selection; selecting more papers does not guarantee a passage from each.
 - **Generate:** send the question and labeled passages (`S1`, `S2`, etc.) to Qwen. Qwen proposes an explanation, a supporting quote, and the passage ID.
 - **Validate:** Python checks output structure, source IDs, quote provenance, and written numerals against the quoted evidence. Filenames and pages come from stored metadata, not invented model references.
 - **Recover once:** if the first attempt refuses or its quote does not match, retry with optional neighboring text and instructions to select evidence before writing the answer. Every recovered answer must pass the same checks. No third attempt is made.
@@ -119,7 +119,7 @@ The [evaluation summary](reports/final-evaluation.md) separates software tests, 
 
 | Check | Recorded result | Interpretation |
 |---|---|---|
-| Automated software tests | 81 passed | Tested software behavior, not LLM accuracy |
+| Automated software tests | 87 passed | Tested software behavior, including multi-paper selection, not LLM accuracy |
 | Historical complete designated evidence at top 3 | Dense 5/10; BM25 7/10; fusion 5/10 | Retrieval coverage on ten answerable reference questions |
 | Final five-question development check | Two supported factual answers, two abstentions, one incompletely supported answer | Small inspected development sample, not a held-out benchmark |
 

@@ -6,9 +6,16 @@ already running when this component was added, stop **only the API** with Ctrl+C
 and start it again. Debug reload is disabled, so the new Python route needs a
 restart. No frontend build, downloads, or extra server are needed.
 
-The page lists the indexed research papers, lets you select one or all, and sends
-your question to the same `/questions` address used by curl. The optional document
-selection sends its stored ID, so filtering still happens in retrieval.
+The page lists the indexed research papers. Under **Search in**, tick one or
+several papers, or use **All research papers**. It sends your question to the
+same `/questions` address used by curl, with selected IDs in `document_ids`.
+All-papers mode omits the filter. Filtering happens before retrieval ranking;
+the three initial matches are shared across your selected papers.
+
+Refreshing preserves a custom selection. All-papers mode includes newly listed
+papers automatically. With no papers checked, Ask is disabled. Deleting the last
+selected paper leaves the selection empty until you choose another. A successful
+upload selects just that uploaded paper; tick others to include them too.
 
 The passage inspector labels additional neighboring passages **Nearby context**.
 These help when an explanation continues into another chunk or onto the next
@@ -27,8 +34,9 @@ attempt’s actual context.
    The form's submit handler sends a JSON question to `/questions` using `fetch()`.
    `renderAnswer()` puts the returned answer and evidence into the page.
 
-The only Python behavior added is `GET /`, which calls Flask's `render_template`.
-Flask also serves the two static files. Retrieval and generation are unchanged.
+`GET /` calls Flask's `render_template`, and Flask serves the two static files.
+The question API accepts multiple document IDs and filters retrieval to their
+union. The generation and quote-validation behavior is unchanged.
 Plain JavaScript keeps this component small; a framework is not required for one
 form and its results.
 

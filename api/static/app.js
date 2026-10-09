@@ -4,6 +4,8 @@ const byId = (id) => document.getElementById(id);
 const form = byId("question-form");
 const question = byId("question");
 const documentSelect = byId("document");
+let allPapers = true;
+let selectedPaperIds = new Set();
 let papersReady = false;
 let busy = false;
 let uploading = false;
@@ -19,7 +21,7 @@ function textElement(tag, text, className) {
 }
 
 function updateControls() {
-  byId("ask-button").disabled = busy || !papersReady;
+  byId("ask-button").disabled = busy || !papersReady || selectedPaperIds.size === 0;
   documentSelect.disabled = busy || !papersReady;
   question.disabled = busy;
   byId("example-button").disabled = busy;
@@ -31,6 +33,17 @@ function updateControls() {
   byId("upload-button").textContent = uploading ? "Adding…" : "Add PDF";
   byId("upload-form").setAttribute("aria-busy", String(uploading));
   document.querySelectorAll(".delete-document").forEach((button) => { button.disabled = busy || loadingDocuments; });
+}
+
+function updatePaperSelection() {
+  const options = byId("paper-options").querySelectorAll("input");
+  options.forEach((input) => { input.checked = selectedPaperIds.has(input.value); });
+  const count = selectedPaperIds.size;
+  byId("all-papers").checked = options.length > 0 && count === options.length;
+  byId("all-papers").indeterminate = count > 0 && count < options.length;
+  byId("selection-status").textContent = count === 0 ? "Choose at least one paper."
+    : allPapers ? `All ${count} papers selected.` : `${count} ${count === 1 ? "paper" : "papers"} selected.`;
+  updateControls();
 }
 
 async function fetchJSON(url, options = {}, timeoutMs = 15000) {
@@ -54,13 +67,18 @@ async function fetchJSON(url, options = {}, timeoutMs = 15000) {
   }
 }
 
-async function loadDocuments(selectedId = documentSelect.value) {
+async function loadDocuments(selectedId) {
+  if (selectedId !== undefined) {
+    allPapers = false;
+    selectedPaperIds = new Set([selectedId]);
+  }
   papersReady = false;
   loadingDocuments = true;
   updateControls();
   byId("reload-documents").disabled = true;
   byId("library-status").textContent = "Loading papers…";
-  documentSelect.replaceChildren(new Option("All research papers", ""));
+  byId("paper-options").replaceChildren();
+  byId("selection-status").textContent = "Loading papers…";
   byId("document-list").replaceChildren();
   try {
     const data = await fetchJSON("/documents");
@@ -75,16 +93,31 @@ async function loadDocuments(selectedId = documentSelect.value) {
         item.append(button);
       }
       byId("document-list").append(item);
-      documentSelect.add(new Option(paper.source, paper.document_id));
+      const label = textElement("label", "", "paper-option");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.name = "paper";
+      checkbox.value = paper.document_id;
+      checkbox.addEventListener("change", () => {
+        allPapers = false;
+        if (checkbox.checked) selectedPaperIds.add(paper.document_id);
+        else selectedPaperIds.delete(paper.document_id);
+        updatePaperSelection();
+      });
+      label.append(checkbox, textElement("span", paper.source));
+      byId("paper-options").append(label);
     }
     papersReady = data.documents.length > 0;
-    if (data.documents.some((paper) => paper.document_id === selectedId)) documentSelect.value = selectedId;
+    const available = new Set(data.documents.map((paper) => paper.document_id));
+    selectedPaperIds = allPapers ? available : new Set([...selectedPaperIds].filter((id) => available.has(id)));
+    updatePaperSelection();
     byId("library-status").textContent = papersReady
       ? `${data.documents.length} ${data.documents.length === 1 ? "paper" : "papers"} available`
       : "No papers are indexed yet. Upload a PDF to start.";
     return true;
   } catch (error) {
     byId("library-status").textContent = error.message;
+    byId("selection-status").textContent = "Refresh papers to choose your sources.";
     return false;
   } finally {
     loadingDocuments = false;
@@ -178,12 +211,12 @@ function renderAnswer(data, submittedQuestion) {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (busy || !papersReady) return;
+  if (busy || !papersReady || selectedPaperIds.size === 0) return;
   const submittedQuestion = question.value.trim();
   question.setCustomValidity(submittedQuestion ? "" : "Please enter a question.");
   if (!form.reportValidity()) return;
   const payload = { question: submittedQuestion };
-  if (documentSelect.value) payload.document_id = documentSelect.value;
+  if (!allPapers) payload.document_ids = [...selectedPaperIds];
   busy = true;
   updateControls();
   byId("request-error").hidden = true;
@@ -220,10 +253,18 @@ form.addEventListener("submit", async (event) => {
 
 question.addEventListener("input", () => question.setCustomValidity(""));
 byId("reload-documents").addEventListener("click", () => loadDocuments());
+byId("all-papers").addEventListener("change", (event) => {
+  allPapers = event.target.checked;
+  selectedPaperIds = allPapers
+    ? new Set([...byId("paper-options").querySelectorAll("input")].map((input) => input.value)) : new Set();
+  updatePaperSelection();
+});
 byId("example-button").addEventListener("click", () => {
   question.value = "How many layers are in the Transformer encoder?";
   question.setCustomValidity("");
-  documentSelect.value = "";
+  allPapers = true;
+  selectedPaperIds = new Set([...byId("paper-options").querySelectorAll("input")].map((input) => input.value));
+  updatePaperSelection();
   question.focus();
 });
 byId("pdf-file").addEventListener("change", () => {

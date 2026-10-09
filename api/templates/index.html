@@ -16,13 +16,13 @@
     <aside class="library" aria-labelledby="library-title">
       <p class="eyebrow">Your collection</p>
       <h2 id="library-title">Research papers</h2>
-      <p class="muted">Ask across the collection or choose a single paper.</p>
+      <p class="muted">Ask across the collection or choose the papers to include.</p>
       <p id="library-status" role="status">Loading papers…</p>
       <ul id="document-list" class="document-list"></ul>
       <button id="reload-documents" class="text-button" type="button">Refresh papers</button>
       <p id="library-action-status" role="status" aria-live="polite"></p>
       <p id="library-error" class="error-message" role="alert" hidden></p>
-      <div class="library-note">Questions use the papers listed here. Choose a specific paper to keep your search focused.</div>
+      <div class="library-note">Questions use your selected papers. Choose one or several to keep your search focused.</div>
     </aside>
 
     <main>
@@ -44,8 +44,12 @@
       </form>
 
       <form id="question-form" class="question-card" aria-label="Ask the research papers">
-        <label for="document">Search in</label>
-        <select id="document" name="document" disabled><option value="">All research papers</option></select>
+        <fieldset id="document" class="paper-picker" disabled aria-describedby="selection-status">
+          <legend>Search in</legend>
+          <label class="paper-option all-papers"><input id="all-papers" type="checkbox" checked> <span>All research papers</span></label>
+          <div id="paper-options" class="paper-options"></div>
+          <p id="selection-status" role="status" aria-live="polite">Loading papers…</p>
+        </fieldset>
         <label for="question">Your question</label>
         <textarea id="question" name="question" rows="3" maxlength="2000" required
           placeholder="How many layers are in the Transformer encoder?" aria-describedby="question-hint"></textarea>

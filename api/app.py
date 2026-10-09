@@ -175,8 +175,8 @@ def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads",
     @app.post("/questions")
     def questions():
         data = request.get_json()
-        if not isinstance(data, dict) or set(data) - {"question", "top_k", "document_id"}:
-            return error("invalid_request", "Send question, with optional top_k and document_id.", 400)
+        if not isinstance(data, dict) or set(data) - {"question", "top_k", "document_id", "document_ids"}:
+            return error("invalid_request", "Send question, with optional top_k and either document_id or document_ids.", 400)
         question, top_k, document_id = data.get("question"), data.get("top_k", 3), data.get("document_id")
         if not isinstance(question, str) or not question.strip():
             return error("invalid_request", "Question must be a nonempty string.", 400)
@@ -184,6 +184,14 @@ def create_app(db=DEFAULT_DB, model=None, upload_dir=ROOT / "data/raw/uploads",
             return error("invalid_request", "top_k must be an integer from 1 to 10.", 400)
         if document_id is not None and (not isinstance(document_id, str) or not document_id.strip()):
             return error("invalid_request", "document_id must be a nonempty string.", 400)
+        if "document_ids" in data:
+            if "document_id" in data:
+                return error("invalid_request", "Use either document_id or document_ids, not both.", 400)
+            identities = data["document_ids"]
+            if (not isinstance(identities, list) or not identities
+                    or any(not isinstance(value, str) or not value.strip() for value in identities)):
+                return error("invalid_request", "document_ids must be a nonempty list of document ID strings.", 400)
+            document_id = list(dict.fromkeys(identities))
         problem = acquire_index()
         if problem is not None:
             return problem

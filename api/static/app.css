@@ -43,6 +43,15 @@ main { min-width: 0; padding: 42px 48px 20px; }
 #upload-status:empty { display: none; }
 label { display: block; font-size: 12px; font-weight: 650; margin-bottom: 7px; }
 select { max-width: 100%; width: 100%; padding: 9px 12px; color: var(--ink); background: #f6f7f2; border: 1px solid var(--line); border-radius: 7px; margin-bottom: 20px; }
+.paper-picker { min-width: 0; margin: 0 0 20px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 7px; background: #f6f7f2; }
+.paper-picker legend { font-size: 12px; font-weight: 650; padding: 0 5px; }
+.paper-option { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 6px 0; font-size: 13px; font-weight: 400; cursor: pointer; }
+.paper-option input { flex: 0 0 auto; width: 16px; height: 16px; margin: 3px 0 0; accent-color: var(--green); }
+.paper-option span { min-width: 0; overflow-wrap: anywhere; }
+.all-papers { font-weight: 650; border-bottom: 1px solid var(--line); margin-bottom: 5px; padding-bottom: 10px; }
+.paper-options { max-height: 180px; overflow-y: auto; }
+.paper-picker:disabled .paper-option { cursor: not-allowed; opacity: .6; }
+#selection-status { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
 textarea { display: block; resize: vertical; min-height: 100px; width: 100%; padding: 12px; border: 1px solid #cdd5ca; background: white; border-radius: 7px; color: var(--ink); }
 textarea::placeholder { color: #778078; }
 .form-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 16px; }

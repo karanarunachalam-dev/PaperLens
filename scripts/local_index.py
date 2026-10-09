@@ -33,8 +33,15 @@ def open_index(path: Path):
 
 
 def document_filter(document_id):
+    """Match one document or a nonempty union of selected document IDs."""
+    if isinstance(document_id, list):
+        if not document_id or any(not isinstance(value, str) or not value.strip() for value in document_id):
+            raise ValueError("Select at least one nonempty document ID.")
+        match = models.MatchAny(any=list(dict.fromkeys(document_id)))
+    else:
+        match = models.MatchValue(value=document_id)
     return models.Filter(must=[models.FieldCondition(
-        key="document_id", match=models.MatchValue(value=document_id))])
+        key="document_id", match=match)])
 
 
 def upsert_document(client, chunks, vectors):
