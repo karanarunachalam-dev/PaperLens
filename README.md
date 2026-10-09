@@ -1,6 +1,8 @@
 # Research Evidence Assistant
 
-Ask questions about research PDFs and inspect the evidence behind each answer. A local **Retrieval-Augmented Generation (RAG)** application built with BGE embeddings, Qdrant, Qwen, and Flask.
+Ask questions about your research papers, read answers with source quotes, and open the cited PDF pages to check the evidence. A local **Retrieval-Augmented Generation (RAG)** application built with BGE embeddings, Qdrant, Qwen, and Flask.
+
+[Setup](docs/setup.md) · [How RAG works](#understand-the-rag-pipeline) · [Using the app](#using-the-app) · [Evaluation](#evaluation-what-was-actually-measured) · [API guide](docs/backend-api.md)
 
 **Status: working portfolio prototype.** Upload, search, answer generation, deletion, and PDF citation links work locally. Answer reliability remains limited; this project demonstrates the pipeline and its failure modes.
 
@@ -18,6 +20,22 @@ Ask questions about research PDFs and inspect the evidence behind each answer. A
 - See the difference between insufficient evidence, an invalid quote, and a service error.
 
 Inference runs locally after setup. No paid model API is required. Uploading a PDF does **not** train or fine-tune either model.
+
+## Why this project?
+
+Research papers often spread useful details across sections and pages. This app helps you find those passages and ask focused questions such as “How many encoder layers are used?” or “What warmup schedule does the paper report?” You can then inspect the quote in its original PDF instead of relying on the generated explanation alone.
+
+The project demonstrates a complete local RAG workflow: preparing documents, retrieving relevant passages, generating answers, checking source quotes, and measuring where the system succeeds or fails. It is a reading aid and a learning project; answer quality still needs human review.
+
+## Using the app
+
+1. **Choose your sources.** Use the included reference collection after setup, or add a text-based PDF with **Add PDF**. Upload one file at a time.
+2. **Select papers.** Under **Search in**, tick one or several papers, or choose **All research papers**. A new upload is selected automatically; tick other papers to include them too.
+3. **Ask a focused question.** The app searches only your selected papers. Answers run locally and can take a few minutes.
+4. **Check the evidence.** Read the quoted passage and click `[S1]` or **Open PDF at page…** to view the original source. Expand **Inspect passages sent to the model** to see the model's context.
+5. **Manage your collection.** Use **Delete** beside a web upload to remove its stored copy and indexed passages. The original file you uploaded from is unaffected; imported reference papers are protected.
+
+You must select at least one paper to ask a question. Custom selections survive **Refresh papers**. Selecting several papers makes them eligible for retrieval, but does not guarantee that every selected paper appears in the answer.
 
 ## Understand the RAG pipeline
 
@@ -45,7 +63,8 @@ The PDF's SHA-256 identifies its exact bytes. Uploading identical bytes reuses t
 ```mermaid
 flowchart TD
     Q[User question] --> B[BGE embeds the question]
-    B --> R[Qdrant retrieves top 3 chunks]
+    S[Selected paper IDs] --> R[Qdrant retrieves top 3 eligible chunks]
+    B --> R
     R --> G[Qwen proposes answer, quote, and source ID]
     G --> V[Python validates the response]
     V -->|Valid answer| A[Answer with evidence and PDF links]
@@ -60,6 +79,8 @@ flowchart TD
 - **Generate:** send the question and labeled passages (`S1`, `S2`, etc.) to Qwen. Qwen proposes an explanation, a supporting quote, and the passage ID.
 - **Validate:** Python checks output structure, source IDs, quote provenance, and written numerals against the quoted evidence. Filenames and pages come from stored metadata, not invented model references.
 - **Recover once:** if the first attempt refuses or its quote does not match, retry with optional neighboring text and instructions to select evidence before writing the answer. Every recovered answer must pass the same checks. No third attempt is made.
+
+The embedding model actually computes the vectors; Qdrant stores and searches them. Qwen receives retrieved text and generates the answer. Python checks the proposed sources and quotes before the app displays an accepted answer. These are separate responsibilities, and no step updates either model's weights.
 
 **Neighboring chunks** are the immediate passages before or after retrieved chunks in the same document. They may contain a sentence's continuation on the next page. They are not simply the fourth- and fifth-ranked search results. At most two are added, each with its own page identity; optional context is removed first if it exceeds the generator's context budget.
 
@@ -93,7 +114,16 @@ BGE and Qwen are both pretrained. BGE finds relevant text; Qwen writes the answe
 
 ## Run locally
 
-Supported setup: **Linux x86-64, Python 3.12, CPU inference**. First-time setup downloads dependencies, pinned models, and three reference papers. Follow the [complete setup guide](docs/setup.md) first.
+Supported setup: **Linux x86-64, Python 3.12, CPU inference**. No GPU or API key is required. Internet access is needed for initial downloads; inference runs locally afterward.
+
+For a first installation, follow the [complete setup guide](docs/setup.md), which covers:
+
+1. Creating the Python environment and installing dependencies.
+2. Caching the pinned BGE embedding model.
+3. Downloading and verifying Qwen and the llama.cpp runtime.
+4. Downloading the three reference papers and building the local search index.
+
+The startup commands below assume those steps are complete.
 
 Then, from the repository root, keep these running in separate terminals:
 
@@ -111,7 +141,9 @@ Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) and try:
 
 > How many layers are in the Transformer encoder?
 
-Use the [demo walkthrough](docs/demo.md) for a short presentation. Answers can take a few minutes, especially when a second model call is needed. Restart the app after Python code changes; automatic reload is disabled.
+The website runs on port **8000** and the local model server on **8081**. Keep both terminals running. Models and indexed papers persist between sessions, so daily use requires only these two startup commands.
+
+Use the [demo walkthrough](docs/demo.md) for a short presentation. Restart the app after Python code changes and refresh the browser; automatic reload is disabled. The model server can stay running.
 
 ## Evaluation: what was actually measured
 
@@ -124,6 +156,8 @@ The [evaluation summary](reports/final-evaluation.md) separates software tests, 
 | Final five-question development check | Two supported factual answers, two abstentions, one incompletely supported answer | Small inspected development sample, not a held-out benchmark |
 
 The reference corpus contains three pinned papers, 45 pages, and 158 chunks: **Attention Is All You Need**, **Sentence-BERT**, and **Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks**. Their versions, checksums, questions, and evidence locations are in the [reference manifest](data/evaluation/research-papers.json).
+
+The current 87-test suite includes six tests added for multi-paper selection. The evaluation report preserves the earlier 81-test baseline and its separate live-model observations.
 
 There is no single final full-corpus answer-accuracy score. For example, recovery answered “What does attention mean?”, but its quote still did not support every detail of the explanation. Intermediate failures and the final recovery-only design are documented in the [continuation report](reports/continuation-context.md).
 
