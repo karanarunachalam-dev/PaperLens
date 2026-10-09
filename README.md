@@ -4,7 +4,7 @@ A learning-first document question-answering project with inspectable source evi
 
 ## Status
 
-Day 1 started on October 5, 2026. Implemented components: semantic search, page-aware PDF extraction, two chunking strategies, persistent Qdrant retrieval, and local answer generation with source references. A fixed evaluation on three real research papers now exposes retrieval, citation, and generation failures and checks targeted fixes. The API/UI and broader quality evaluation are still outstanding.
+Day 1 started on October 5, 2026. Implemented components include semantic search, page-aware PDF extraction, chunking, persistent Qdrant retrieval, local answer generation, and a web interface with PDF upload, deletion, and citation links. A fixed evaluation on three real research papers exposes retrieval, citation, and generation failures and checks targeted fixes. Broader answer-quality evaluation remains outstanding.
 
 ## Day 1 objective
 
@@ -133,6 +133,10 @@ HF_HUB_OFFLINE=1 .venv/bin/python -m scripts.answer_question "What was the lead 
 Use `--document-id` to select one PDF and `--json` to inspect retrieved evidence, raw output, and timings. Stop the server with Ctrl+C when finished. The first download needs the internet; these inference commands use cached local models and localhost.
 
 The application supplies retrieved text to the generator, checks its context budget with the generator's tokenizer, and validates source IDs and quoted evidence. Original filenames and physical PDF page numbers come from stored metadata. Missing evidence produces an explicit abstention; invalid citations, output truncation, and server failures produce errors. These checks cannot establish semantic faithfulness or guarantee protection against document prompt injection.
+
+The answer pipeline first uses the original top-k passages and prompt. A valid answer returns immediately. If it abstains or produces a quote that does not match its cited passage, one recovery attempt can use up to two immediate neighboring chunks from the same documents, including across consecutive pages. Recovery passages appear in reading order and keep their own page and citation identity. Optional neighbors are removed first if they exceed the model's context budget. Use `--neighbors 0` in the answer CLI to disable context expansion.
+
+During recovery, the model selects a short quote before writing its explanation. Every quote must still match one cited passage. A second invalid answer is withheld; if the first attempt was a safe abstention, that abstention is retained. Otherwise a repeated failure remains an error. Recovery can add another local generation call. No invalid quote is silently accepted or rewritten.
 
 Read `docs/local-generation.md` for the short concept/code walkthrough and `reports/day3-local-generation.md` for measured results, including the initial incorrect refusals and the prompt correction. The six synthetic development cases are reproducible with `.venv/bin/python -m scripts.benchmark_local_generator` while the server is running and the index contains the two sample PDFs. The command overwrites the final JSON report; the separately saved initial report remains intact.
 

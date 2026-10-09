@@ -77,6 +77,111 @@ class GroundedAnswerTests(unittest.TestCase):
         excerpt = "Batch size: 16."
         self.assertEqual(find_quote_span(excerpt, source), excerpt)
 
+    def test_cross_page_quote_is_rejected_but_separate_quotes_keep_pages(self):
+        sources = {"S1": {**self.hit, "text": "The output is computed as a weighted sum"},
+                   "S2": {**self.hit, "page": 4, "chunk_id": "chunk-8",
+                          "text": "of the values, where weights depend on the query."}}
+        raw = {"insufficient_evidence": False, "statements": [
+            {"text": "The output is a weighted sum of values.", "source_id": "S1",
+             "quote": "The output is computed as a weighted sum of the values"}]}
+        with self.assertRaisesRegex(ValueError, "quote does not occur"):
+            validate_answer(raw, sources)
+        raw["statements"] = [
+            {"text": "The output is a weighted sum.", "source_id": "S1", "quote": "a weighted sum"},
+            {"text": "Weights depend on the query.", "source_id": "S2", "quote": "weights depend on the query"}]
+        self.assertEqual([c["page"] for c in validate_answer(raw, sources)["citations"]], [3, 4])
+
+    @patch("scripts.grounded_answer.request_json")
+    def test_context_budget_drops_only_neighbors_and_rebuilds_source_ids(self, request):
+        neighbor = {**self.hit, "chunk_id": "optional", "retrieval_role": "neighbor", "score": 0.1}
+        request.side_effect = [
+            {"prompt": "initial"}, {"tokens": [1]},
+            {"default_generation_settings": {"n_ctx": 1024}},
+            {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(
+                {"insufficient_evidence": True, "statements": []})}}]},
+            {"prompt": "large"}, {"tokens": list(range(900))},
+            {"prompt": "small"}, {"tokens": [1, 2]},
+            {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(self.raw)}}]}]
+        original = [neighbor, self.hit]
+        result = generate_answer("What batch size?", original)
+        self.assertEqual(result["omitted_neighbor_count"], 1)
+        self.assertEqual(len(result["retrieved"]), 1)
+        self.assertEqual(result["citations"][0]["chunk_id"], self.hit["chunk_id"])
+        self.assertEqual(result["citations"][0]["source_id"], "S1")
+        self.assertEqual(len(original), 2)
+        sent = request.call_args_list[-1].args[1]["messages"]
+        self.assertEqual(json.loads(sent[1]["content"])["documents"][0]["passages"][0]["source_id"], "S1")
+
+    @patch("scripts.grounded_answer.request_json")
+    def test_one_quote_correction_must_pass_the_original_validator(self, request):
+        invalid = copy.deepcopy(self.raw)
+        invalid["statements"][0]["quote"] = "a quote that was not supplied"
+        def completion(raw):
+            return {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(raw)}}]}
+        request.side_effect = [
+            {"prompt": "initial"}, {"tokens": [1]}, {"default_generation_settings": {"n_ctx": 4096}},
+            completion(invalid), {"prompt": "correction"}, {"tokens": [1, 2]}, completion(self.raw)]
+        result = generate_answer("What batch size?", [self.hit])
+        self.assertEqual(result["status"], "answered")
+        self.assertEqual(len(result["generation_attempts"]), 2)
+        self.assertEqual(result["citations"][0]["quote"], "batch size: 16")
+        correction = request.call_args_list[-1].args[1]["messages"]
+        self.assertIn("previous answer had a quote", correction[0]["content"])
+        self.assertIn("What batch size?", correction[-1]["content"])
+
+    @patch("scripts.grounded_answer.request_json")
+    def test_failed_correction_is_rejected_without_a_third_attempt(self, request):
+        self.raw["statements"][0]["quote"] = "batch size: 64"
+        response = {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(self.raw)}}]}
+        request.side_effect = [
+            {"prompt": "initial"}, {"tokens": [1]}, {"default_generation_settings": {"n_ctx": 4096}},
+            response, {"prompt": "correction"}, {"tokens": [1]}, response]
+        with self.assertRaisesRegex(ValueError, "quote does not occur") as caught:
+            generate_answer("What batch size?", [self.hit])
+        self.assertEqual(len(caught.exception.details["generation_attempts"]), 2)
+        self.assertEqual(request.call_count, 7)
+
+    @patch("scripts.grounded_answer.request_json")
+    def test_correction_cannot_exceed_the_context_budget(self, request):
+        self.raw["statements"][0]["quote"] = "batch size: 64"
+        response = {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(self.raw)}}]}
+        request.side_effect = [
+            {"prompt": "initial"}, {"tokens": [1]}, {"default_generation_settings": {"n_ctx": 1024}},
+            response, {"prompt": "correction"}, {"tokens": list(range(900))}]
+        with self.assertRaisesRegex(ValueError, "quote does not occur") as caught:
+            generate_answer("What batch size?", [self.hit])
+        self.assertIn("retry_skipped", caught.exception.details)
+        self.assertEqual(request.call_count, 6)
+
+    @patch("scripts.grounded_answer.request_json")
+    def test_successful_primary_answer_keeps_original_ranking_and_skips_recovery(self, request):
+        neighbor = {**self.hit, "chunk_id": "optional", "retrieval_role": "neighbor"}
+        first = {**self.hit, "retrieval_rank": 1}
+        second = {**self.hit, "retrieval_rank": 2, "chunk_id": "second"}
+        request.side_effect = [
+            {"prompt": "primary"}, {"tokens": [1]}, {"default_generation_settings": {"n_ctx": 4096}},
+            {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(self.raw)}}]}]
+        result = generate_answer("What batch size?", [neighbor, second, first])
+        self.assertEqual([h["chunk_id"] for h in result["retrieved"]], ["chunk-7", "second"])
+        self.assertEqual(len(result["generation_attempts"]), 1)
+        self.assertEqual(request.call_count, 4)
+
+    @patch("scripts.grounded_answer.request_json")
+    def test_invalid_recovery_preserves_initial_abstention_and_diagnostics(self, request):
+        invalid = copy.deepcopy(self.raw)
+        invalid["statements"][0]["text"] = "The batch size was 32."
+        def completion(raw):
+            return {"choices": [{"finish_reason": "stop", "message": {"content": json.dumps(raw)}}]}
+        missing = {"insufficient_evidence": True, "statements": []}
+        request.side_effect = [
+            {"prompt": "primary"}, {"tokens": [1]}, {"default_generation_settings": {"n_ctx": 4096}},
+            completion(missing), {"prompt": "recovery"}, {"tokens": [1]}, completion(invalid)]
+        result = generate_answer("What batch size?", [self.hit])
+        self.assertEqual(result["status"], "insufficient_evidence")
+        self.assertEqual(result["citations"], [])
+        self.assertIn("numeric claim", result["recovery_error"])
+        self.assertEqual(len(result["generation_attempts"]), 2)
+
     def test_rejects_changed_numeric_claim_even_when_quote_is_real(self):
         self.raw["statements"][0]["text"] = "The batch size was 32."
         with self.assertRaisesRegex(ValueError, "numeric claim"):

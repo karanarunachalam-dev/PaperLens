@@ -6,29 +6,36 @@ from pathlib import Path
 import time
 
 from scripts.grounded_answer import generate_answer
+from scripts.context_passages import DEFAULT_NEIGHBORS, add_neighbors
 from scripts.hybrid_search import search_hybrid, search_keywords
 from scripts.local_index import open_index, search_index
 from scripts.search_documents import load_model
 from scripts.semantic_search_demo import QUERY_PREFIX
 
 
-def retrieve(question, model, db, top_k=3, document_id=None, method="dense"):
+def retrieve(question, model, db, top_k=3, document_id=None, method="dense", neighbors=DEFAULT_NEIGHBORS):
     if not question.strip() or not 1 <= top_k <= 10:
         raise ValueError("Provide a nonempty question and --top-k between 1 and 10.")
     if method not in {"dense", "bm25", "hybrid"}:
         raise ValueError("Retrieval method must be dense, bm25, or hybrid.")
+    if type(neighbors) is not int or not 0 <= neighbors <= 2:
+        raise ValueError("Neighbor limit must be between 0 and 2.")
     query = QUERY_PREFIX + question.strip()
     if len(model.tokenizer.encode(query)) > model.max_seq_length:
         raise ValueError("Question exceeds the embedding model's token limit; shorten it.")
-    vector = model.encode(query, convert_to_numpy=True) if method != "bm25" else None
+    vector = model.encode(query, convert_to_numpy=True) if method != "bm25" or neighbors else None
     client = open_index(db)
     try:
         if method == "hybrid":
-            return search_hybrid(client, question, vector, top_k, document_id)
-        if method == "bm25":
-            return search_keywords(client, question, top_k, document_id)
-        return [{"score": hit.score, **hit.payload}
-                for hit in search_index(client, vector, top_k, document_id)]
+            matches = search_hybrid(client, question, vector, top_k, document_id)
+        elif method == "bm25":
+            matches = search_keywords(client, question, top_k, document_id)
+        else:
+            matches = [{"score": hit.score, **hit.payload}
+                       for hit in search_index(client, vector, top_k, document_id)]
+        if neighbors:
+            matches = [{**hit, "retrieval_rank": rank} for rank, hit in enumerate(matches, 1)]
+        return add_neighbors(client, matches, vector, neighbors)
     finally:
         client.close()
 
@@ -40,12 +47,14 @@ def main():
     parser.add_argument("--db", type=Path, default=root / "data/index/qdrant")
     parser.add_argument("--document-id")
     parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--neighbors", type=int, choices=range(3), default=DEFAULT_NEIGHBORS,
+                        help="Add up to this many nearby passages (default: 2).")
     parser.add_argument("--method", choices=["dense", "bm25", "hybrid"], default="dense")
     parser.add_argument("--json", action="store_true", help="Include retrieved text and model timings.")
     args = parser.parse_args()
     started = time.perf_counter()
     try:
-        matches = retrieve(args.question, load_model(), args.db, args.top_k, args.document_id, args.method)
+        matches = retrieve(args.question, load_model(), args.db, args.top_k, args.document_id, args.method, args.neighbors)
         result = generate_answer(args.question, matches)
         result["total_seconds"] = round(time.perf_counter() - started, 3)
     except (OSError, ValueError, RuntimeError, KeyError, IndexError, TypeError) as error:

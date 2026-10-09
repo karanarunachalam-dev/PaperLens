@@ -26,6 +26,22 @@ Each required fact is an evidence group. A group may list alternative spans that
 
 This is a conservative reference-span metric, not retrieval accuracy. References may omit a valid alternative passage, and finding a short factual span does not establish that all surrounding context is present. For example, the training-hardware question retrieves a useful GPU statement on page 2 even though its designated hardware reference is on page 7. Human inspection accompanies the metric.
 
+The evaluator defaults to `--neighbors 0` to preserve the historical ranked
+retrieval baseline. To evaluate the current application's context expansion,
+pass `--neighbors 2`; the trace records this setting and the additional context
+module's code hash. Expanded passages are in document reading order, so
+`first_rank` in coverage results is then a position in the expanded candidate context,
+not a similarity rank. Do not compare expanded coverage directly to historical
+top-three coverage without stating the larger context allowance. Generation
+uses the current recovery policy; old generation results require their recorded
+code revision, prompts/schemas, and settings to reproduce.
+
+The current generator tries the primary ranked passages first and uses expanded
+context only during recovery. `evidence_coverage` measures the retrieval
+candidates; `generation_evidence_coverage` measures the actual passages in the
+last model attempt. The trace records both primary and recovery prompts/schemas,
+and each generation attempt retains the exact passages and IDs it received.
+
 ## Keyword search and rank fusion
 
 Dense embeddings compare meaning. BM25 compares words, rewarding informative terms while controlling repetition and passage length. The optional implementation uses `k1=1.2`, `b=0.75`, lowercase alphanumeric tokens, and Unicode normalization. It has no stemming or learned reranker. These parameters follow the documented [Lucene BM25 defaults](https://lucene.apache.org/core/9_12_1/core/org/apache/lucene/search/similarities/BM25Similarity.html).

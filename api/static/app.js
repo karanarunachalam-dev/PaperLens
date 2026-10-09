@@ -164,7 +164,8 @@ function renderAnswer(data, submittedQuestion) {
   passages.replaceChildren();
   for (const passage of data.retrieved) {
     const card = textElement("article", "", "passage-card");
-    card.append(textElement("p", `[${passage.source_id}] ${passage.source} · Physical page ${passage.page} · Similarity ${Number(passage.score).toFixed(3)}`, "source-label"));
+    const contextLabel = passage.retrieval_role === "neighbor" ? " · Nearby context" : "";
+    card.append(textElement("p", `[${passage.source_id}] ${passage.source} · Physical page ${passage.page} · Similarity ${Number(passage.score).toFixed(3)}${contextLabel}`, "source-label"));
     card.append(textElement("p", passage.text, "passage-text"));
     passages.append(card);
   }
@@ -193,7 +194,7 @@ form.addEventListener("submit", async (event) => {
   byId("empty-message").textContent = "Reading the retrieved passages and preparing an answer…";
   const started = Date.now();
   const updateElapsed = () => {
-    byId("request-status").textContent = `Working on your question · ${Math.floor((Date.now() - started) / 1000)}s elapsed. Local answers can take a minute or two.`;
+    byId("request-status").textContent = `Working on your question · ${Math.floor((Date.now() - started) / 1000)}s elapsed. Local answers can take a few minutes.`;
   };
   updateElapsed();
   const timer = setInterval(updateElapsed, 1000);

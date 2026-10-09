@@ -38,11 +38,34 @@ fields are rejected. An unknown document ID retrieves nothing and produces an
 insufficient-evidence response. The embedding tokenizer also limits question
 length, and the request body is capped at 16 KiB.
 
+`top_k` counts the initial ranked matches. Generation first uses those matches
+in their original ranking with the existing prompt. A valid answer returns
+immediately. The pipeline also prepares up to two immediate neighbors from the
+same documents for a possible recovery attempt. Neighbors retain their original
+page and text and carry `retrieval_role: "neighbor"`, `neighbor_of` chunk IDs,
+and their actual cosine similarity. Main matches retain `retrieval_rank`.
+The returned `retrieved` list contains exactly the passages sent in the last
+model attempt. No reindexing is required.
+
 The response contains `status`, `answer`, `citations`, `retrieved` passages,
 `generation_seconds`, and `total_seconds`. Original PDF filenames and physical
 page numbers remain attached to each citation. A missing-evidence answer is a
 successful HTTP 200 response with `status: "insufficient_evidence"`; a failed
 model call is an error, not evidence that the documents lack the answer.
+
+If the first attempt abstains or its quote does not occur in the cited passage,
+the pipeline makes one recovery attempt with the expanded context in reading
+order and evidence-first instructions. Quote errors also receive corrective
+instructions. The response must pass all original checks. Other validation
+errors do not trigger recovery. A failed recovery cannot replace an initial safe
+abstention with an invalid answer; the abstention is retained and diagnostics
+record the failure. If the original result was a quote error, a repeated failure
+still produces an API error. No third attempt is made.
+
+The complete recovery prompt must fit the generator's context budget. Optional
+neighbors are removed first when needed. If it still cannot fit, retain the
+original abstention or quote error. `generation_seconds` includes both calls;
+requests needing recovery can take several minutes.
 
 ## Four pieces of code to understand
 

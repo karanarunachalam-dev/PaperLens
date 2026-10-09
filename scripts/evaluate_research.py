@@ -10,7 +10,7 @@ import time
 
 from scripts.answer_question import retrieve
 from scripts.extract_pdf import extract_pdf
-from scripts.grounded_answer import CONFIG, SCHEMA, SYSTEM, generate_answer
+from scripts.grounded_answer import CONFIG, SCHEMA, SYSTEM, RECOVERY_SCHEMA, RECOVERY_SYSTEM, generate_answer
 from scripts.hybrid_search import HYBRID_CONFIG
 from scripts.local_index import INDEX_CONFIG, list_documents, open_index
 from scripts.search_documents import index_pdf, load_model
@@ -66,6 +66,8 @@ def main():
     parser.add_argument("--prepare", action="store_true", help="Download missing pinned PDFs and index them.")
     parser.add_argument("--retrieval-only", action="store_true")
     parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--neighbors", type=int, choices=range(3), default=0,
+                        help="Extra neighboring passages; 0 preserves the historical retrieval baseline.")
     parser.add_argument("--method", choices=["dense", "bm25", "hybrid"], default="dense")
     parser.add_argument("--case", action="append", dest="case_ids", help="Run only this case; repeat for several.")
     args = parser.parse_args()
@@ -97,18 +99,20 @@ def main():
     report = {"started_at_utc": datetime.now(timezone.utc).isoformat(),
               "dataset_sha256": digest(args.dataset), "index_config": INDEX_CONFIG,
               "generator_config": CONFIG, "system_prompt": SYSTEM, "response_schema": SCHEMA,
-              "top_k": args.top_k, "retrieval_method": args.method, "hybrid_config": HYBRID_CONFIG,
+              "recovery_system_prompt": RECOVERY_SYSTEM, "recovery_response_schema": RECOVERY_SCHEMA,
+              "top_k": args.top_k, "neighbors": args.neighbors,
+              "retrieval_method": args.method, "hybrid_config": HYBRID_CONFIG,
               "retrieval_only": args.retrieval_only, "documents": documents,
               "embedding_load_seconds": round(model_seconds, 3), "cases": [],
               "versions": {p: version(p) for p in ("pypdf", "sentence-transformers", "qdrant-client")},
               "code_sha256": {f: digest(ROOT / "scripts" / f) for f in
-                              ("grounded_answer.py", "answer_question.py", "hybrid_search.py", "local_index.py", "extract_pdf.py", "chunk_pdf.py")}}
+                              ("grounded_answer.py", "answer_question.py", "context_passages.py", "hybrid_search.py", "local_index.py", "extract_pdf.py", "chunk_pdf.py")}}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     for case in cases:
         started = time.perf_counter()
         doc_filter = case["document_filter"]
         document_id = dataset["documents"][doc_filter]["sha256"] if doc_filter else None
-        matches = retrieve(case["question"], model, args.db, args.top_k, document_id, args.method)
+        matches = retrieve(case["question"], model, args.db, args.top_k, document_id, args.method, args.neighbors)
         record = {"id": case["id"], "question": case["question"], "answerable": case["answerable"],
                   "reference_answer": case["reference_answer"], "matches": matches,
                   "retrieval_seconds": round(time.perf_counter() - started, 3),
@@ -116,6 +120,8 @@ def main():
         if not args.retrieval_only:
             try:
                 record["result"] = generate_answer(case["question"], matches)
+                record["generation_evidence_coverage"] = evidence_coverage(
+                    case, record["result"]["retrieved"], dataset["documents"])
             except (OSError, ValueError, RuntimeError, KeyError, IndexError, TypeError) as error:
                 record["error"] = str(error)
                 record["error_details"] = getattr(error, "details", None)

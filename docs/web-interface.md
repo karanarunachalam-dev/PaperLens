@@ -10,6 +10,14 @@ The page lists the indexed research papers, lets you select one or all, and send
 your question to the same `/questions` address used by curl. The optional document
 selection sends its stored ID, so filtering still happens in retrieval.
 
+The passage inspector labels additional neighboring passages **Nearby context**.
+These help when an explanation continues into another chunk or onto the next
+page. They retain their own page numbers; quotes and PDF links still refer to a
+single source page. A successful first attempt uses the three ranked matches. If that attempt
+cannot produce a valid answer, recovery can include up to two extra passages
+and follows reading order within each document. The inspector shows the last
+attempt’s actual context.
+
 ## Follow one question through three files
 
 1. `api/templates/index.html` describes the page: paper selector, question form,
