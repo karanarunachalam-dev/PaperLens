@@ -3,13 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Research Evidence Assistant</title>
+  <title>PaperLens · Research Evidence Assistant</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
   <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/" aria-label="Research Evidence Assistant home"><span class="brand-icon" aria-hidden="true">r.</span> Research Evidence Assistant</a>
+    <a class="brand" href="/" aria-label="PaperLens home">
+      <span class="brand-icon" aria-hidden="true">p.</span>
+      <span class="brand-copy"><span class="brand-name">PaperLens</span><span class="brand-subtitle">Research Evidence Assistant</span></span>
+    </a>
     <span class="local-label">On your computer</span>
   </header>
   <div class="workspace">
@@ -81,7 +84,7 @@
           <p class="evidence-note">Check the quoted evidence: a model can misinterpret a passage even when its citation is real.</p>
         </div>
       </section>
-      <footer class="page-footer">Research Evidence Assistant <span>Local models · Answers with sources</span></footer>
+      <footer class="page-footer">PaperLens <span>Local models · Answers with sources</span></footer>
     </main>
   </div>
 </body>

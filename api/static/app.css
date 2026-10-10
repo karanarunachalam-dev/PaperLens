@@ -9,6 +9,9 @@ button:disabled, select:disabled { cursor: not-allowed; opacity: .55; }
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 20px 5%; border-bottom: 1px solid var(--line); background: var(--paper); }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--ink); text-decoration: none; font-weight: 650; letter-spacing: -.3px; }
 .brand-icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 9px; color: white; background: var(--green); font: bold 27px Georgia, serif; }
+.brand-copy { display: flex; flex-direction: column; gap: 2px; }
+.brand-name { font-size: 20px; line-height: 1.2; }
+.brand-subtitle { font-size: 11px; font-weight: 400; letter-spacing: 0; color: var(--muted); }
 .local-label { color: var(--green); font-size: 12px; border: 1px solid #cbdccd; padding: 4px 12px; border-radius: 20px; white-space: nowrap; }
 .workspace { max-width: 1320px; margin: auto; display: grid; grid-template-columns: 270px minmax(0, 1fr); }
 .library { padding: 42px 26px; border-right: 1px solid var(--line); }

@@ -1,12 +1,12 @@
-# Research Evidence Assistant
+# PaperLens — Research Evidence Assistant
 
-Ask questions about your research papers, read answers with source quotes, and open the cited PDF pages to check the evidence. A local **Retrieval-Augmented Generation (RAG)** application built with BGE embeddings, Qdrant, Qwen, and Flask.
+PaperLens lets you ask questions about your research papers, read answers with source quotes, and open the cited PDF pages to check the evidence. A local **Retrieval-Augmented Generation (RAG)** application built with BGE embeddings, Qdrant, Qwen, and Flask.
 
 [Setup](docs/setup.md) · [How RAG works](#understand-the-rag-pipeline) · [Using the app](#using-the-app) · [Evaluation](#evaluation-what-was-actually-measured) · [API guide](docs/backend-api.md)
 
 **Status: working local prototype.** Upload, search, answer generation, deletion, and PDF citation links work locally. Answer reliability remains limited; this project demonstrates the pipeline and its failure modes.
 
-![Research Evidence Assistant displaying an encoder-layer answer with its source quote](docs/assets/answer-preview.png)
+![PaperLens displaying an encoder-layer answer with its source quote](docs/assets/answer-preview.png)
 
 *Interface preview using a recorded local-model answer. The screenshot replays that result; it is not a new live accuracy measurement.*
 
