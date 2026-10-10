@@ -229,14 +229,14 @@ The initial generation walkthrough is in `docs/local-generation.md`. The subsequ
 - Manual review found the attention explanation still exceeds what its selected quote supports. Prior expanded-context computation and combined encoder/decoder checks also remained unreliable. Recorded all these limits and separate development runs in `reports/continuation-context.md`; no claim of five fully grounded successes or general accuracy improvement is made.
 - The user confirmed the app now works and asked whether top-k increased. Explained that normal top-k remains three and only recovery can include two extra neighboring passages. The user's API/model processes were not restarted by the assistant, and their existing whitespace-only chunking-file changes remain untouched.
 
-### Portfolio wrap-up and GitHub preparation
+### Documentation and GitHub preparation
 
 - Replaced the chronological README with a project overview explaining both RAG stages, BGE versus Qwen, page-preserving chunks, quote/citation validation, neighboring-context recovery, and model limitations. Added Mermaid pipeline diagrams, a repository map, test commands, and links to the detailed guides. Preserved the former teaching README in `docs/development-history.md`.
 - Added `docs/setup.md` with the complete cache/download/index/service sequence, daily startup, isolated evaluation commands, and troubleshooting. The setup is scoped to the pinned Linux x86-64/Python 3.12 environment; no fresh second-machine installation is claimed.
-- Added a short presentation walkthrough and portfolio description in `docs/demo.md`. This is a demo script, not a recorded video. Consolidated software, retrieval, and answer-quality evidence in `reports/final-evaluation.md`, retaining historical failures and the final attention answer's incomplete quote support.
+- Documented example questions and evidence inspection in `docs/demo.md`. Consolidated software, retrieval, and answer-quality evidence in `reports/final-evaluation.md`, retaining historical failures and the final attention answer's incomplete quote support.
 - Added `docs/assets/answer-preview.png`, captured from the current UI with a recorded real encoder-answer response from the earlier local upload test. The README labels it as a replay. Inspected the image and verified the displayed citation link; no private document appears in the preview and no new generator call was needed.
 - Re-ran all 81 automated tests successfully; `pip check` found no broken requirements. Checked 28 relative document/image links and balanced code fences. The tracked-file audit found no local-only storage paths, files over 10 MiB, or matches for the checked credential patterns; verified ignore rules for environment files, models, uploads, indexes, runtime traces, and the virtual environment. This pattern check is not a guarantee that arbitrary secrets can be detected.
-- Completed the local portfolio documentation without changing application behavior, restarting user services, or including the user's existing chunking-file edits. Future work is broader answer-quality evaluation; no additional product feature is required to present this version.
+- Completed the project documentation without changing application behavior. Future work is broader answer-quality evaluation.
 
 ### Module 15: Choose multiple papers
 

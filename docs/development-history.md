@@ -1,6 +1,6 @@
 # Development walkthrough archive
 
-This preserves the learning-oriented README at the portfolio wrap-up. Sections describe successive development stages; use [the current README](../README.md) and [setup guide](setup.md) for the finished prototype and current commands. Historical limitations and test counts below belong to their respective stages.
+This preserves the earlier learning-oriented README. Sections describe successive development stages; use [the current README](../README.md) and [setup guide](setup.md) for the finished prototype and current commands. Historical limitations and test counts below belong to their respective stages.
 
 # Research Evidence Assistant
 

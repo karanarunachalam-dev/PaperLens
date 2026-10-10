@@ -1,4 +1,4 @@
-# Portfolio evaluation summary
+# Evaluation summary
 
 The local prototype is functionally complete for its single-user demo: PDFs can be uploaded, searched, questioned, inspected through quotes/page links, and deleted. Answer reliability remains limited. This summary consolidates existing measurements; it is not a new held-out benchmark.
 
@@ -61,4 +61,4 @@ The next quality milestone would be a new, untouched question set and a full end
 
 Follow [setup](../docs/setup.md) and run the software suite. For retrieval or generation evaluation, use the [evaluation guide](../docs/research-evaluation.md), a clean evaluation-only index, and a new output filename. Record the code revision and both primary/recovery prompts. Historical results require their original code/configuration.
 
-The setup instructions were checked against the implementation and cached environment. A fresh installation on a second machine, a new full-corpus generation run, and a recorded video were not part of this wrap-up. The [demo guide](../docs/demo.md) supplies a reproducible presentation script.
+The setup instructions were checked against the implementation and cached environment. A fresh installation on a second machine and a new full-corpus generation run were not performed for this summary. See the [usage examples](../docs/demo.md) for questions to try and evidence-inspection steps.

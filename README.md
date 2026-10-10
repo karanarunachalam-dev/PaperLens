@@ -4,7 +4,7 @@ Ask questions about your research papers, read answers with source quotes, and o
 
 [Setup](docs/setup.md) · [How RAG works](#understand-the-rag-pipeline) · [Using the app](#using-the-app) · [Evaluation](#evaluation-what-was-actually-measured) · [API guide](docs/backend-api.md)
 
-**Status: working portfolio prototype.** Upload, search, answer generation, deletion, and PDF citation links work locally. Answer reliability remains limited; this project demonstrates the pipeline and its failure modes.
+**Status: working local prototype.** Upload, search, answer generation, deletion, and PDF citation links work locally. Answer reliability remains limited; this project demonstrates the pipeline and its failure modes.
 
 ![Research Evidence Assistant displaying an encoder-layer answer with its source quote](docs/assets/answer-preview.png)
 
@@ -143,7 +143,7 @@ Open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) and try:
 
 The website runs on port **8000** and the local model server on **8081**. Keep both terminals running. Models and indexed papers persist between sessions, so daily use requires only these two startup commands.
 
-Use the [demo walkthrough](docs/demo.md) for a short presentation. Restart the app after Python code changes and refresh the browser; automatic reload is disabled. The model server can stay running.
+See the [usage examples](docs/demo.md) for questions to try and ways to inspect the evidence. Restart the app after Python code changes and refresh the browser; automatic reload is disabled. The model server can stay running.
 
 ## Evaluation: what was actually measured
 
@@ -188,7 +188,7 @@ Models, downloaded papers, uploaded files, indexes, environments, and full runti
 ## Documentation
 
 - [Setup, daily use, and troubleshooting](docs/setup.md)
-- [Short demo and portfolio description](docs/demo.md)
+- [Usage examples](docs/demo.md)
 - [Evaluation summary](reports/final-evaluation.md)
 - [API endpoints and error behavior](docs/backend-api.md)
 - [PDF upload and deletion](docs/pdf-upload.md)
